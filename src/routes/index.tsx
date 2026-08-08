@@ -1,16 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Flame,
-  Github,
-  Linkedin,
-  ArrowRight,
-  Snowflake,
-  Rocket,
-  Target,
-  ChevronDown,
-} from "lucide-react";
-import { useState } from "react";
-import { TRACKS } from "@/lib/abtalks/data";
+import { useEffect, useRef } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,251 +8,207 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "A 60-day public coding challenge for Indian college students. One task a day, two proofs, one streak.",
+          "A 60-day public build challenge for Indian college students. Ship daily, post daily, get noticed by recruiters.",
       },
       { property: "og:title", content: "ABTalks — Code Every Day. Get Seen Every Day." },
       {
         property: "og:description",
-        content: "Build daily, post daily, get noticed by recruiters. 60 days, no login needed.",
+        content: "Ship daily, post daily, get noticed. 60 days, two proofs, one streak.",
       },
     ],
   }),
   component: Landing,
 });
 
-const FAQS = [
-  {
-    q: "What if I miss a day?",
-    a: "Nothing dramatic. You start with 2 streak freezes — a freeze is automatically used to protect your streak the first two times you miss. After that your streak resets, but every day you complete still counts toward your total progress, and you can always submit a missed day late.",
-  },
-  {
-    q: "Do I need to already know how to code?",
-    a: "No. Day 1 of every track assumes zero prior context. Tasks start at 45 minutes and grow with you.",
-  },
-  {
-    q: "Is this free?",
-    a: "Yes. ABTalks is completely free. You need a GitHub account and a LinkedIn account — both free too.",
-  },
-];
-
-const QUOTES = [
-  {
-    name: "Rahul M.",
-    college: "NIT Trichy",
-    track: "DSA",
-    text: "I posted 41 days straight. Two recruiters found me from my LinkedIn, not my resume.",
-  },
-  {
-    name: "Sneha K.",
-    college: "SRM Chennai",
-    track: "Full Stack Web Dev",
-    text: "The caption generator is the reason I didn't quit on day 9. One tap and I'm done.",
-  },
-  {
-    name: "Aman P.",
-    college: "IIIT Bhubaneswar",
-    track: "Mobile / App Dev",
-    text: "Missed two days during exams. The freezes meant I didn't feel like a failure and just kept going.",
-  },
-];
-
 function Landing() {
-  return (
-    <div className="min-h-screen bg-background text-foreground">
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const visualRef = useRef<HTMLDivElement | null>(null);
 
-      {/* Hero */}
-      <section className="scene ember-grid relative overflow-hidden px-4 pt-14 pb-16">
-        <div className="mx-auto max-w-5xl">
-          <p className="tilt-in inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground">
-            <span className="size-1.5 rounded-full bg-flame" /> 60 days · 1 task a day · 2 proofs
+  // spark particles
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf = 0;
+    let w = 0;
+    let h = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const resize = () => {
+      w = canvas.offsetWidth;
+      h = canvas.offsetHeight;
+      canvas.width = w * dpr;
+      canvas.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const sparks = Array.from({ length: 46 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.6 + 0.4,
+      vy: -(Math.random() * 0.35 + 0.08),
+      vx: (Math.random() - 0.5) * 0.14,
+      a: Math.random() * 0.6 + 0.15,
+    }));
+
+    const tick = () => {
+      ctx.clearRect(0, 0, w, h);
+      for (const s of sparks) {
+        s.x += s.vx;
+        s.y += s.vy;
+        if (s.y < -10) {
+          s.y = h + 10;
+          s.x = Math.random() * w;
+        }
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(163, 236, 255, ${s.a})`;
+        ctx.fill();
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  // parallax on hero visual
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      const el = visualRef.current;
+      if (!el) return;
+      const dx = (e.clientX / window.innerWidth - 0.5) * 18;
+      const dy = (e.clientY / window.innerHeight - 0.5) * 14;
+      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+    };
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+
+  return (
+    <div>
+      <section className="hero">
+        <div className="hero-visual" ref={visualRef} aria-hidden="true">
+          <div className="grid-floor" />
+          <div className="ember-core">
+            <div className="ember-glow ember-glow-1" />
+            <div className="ember-glow ember-glow-2" />
+            <div className="ember-glow ember-glow-3" />
+          </div>
+          <canvas id="sparks" ref={canvasRef} />
+        </div>
+
+        <div className="hero-content">
+          <p className="eyebrow">
+            <span className="live-dot" /> day 12 of 60 · streak alive
           </p>
-          <h1 className="tilt-in mt-5 text-[2.6rem] leading-[1.05] font-black tracking-tight sm:text-6xl">
-            Code Every Day.
+          <h1>
+            Code every day.
             <br />
-            <span className="text-flame">Get Seen Every Day.</span>
+            <em>Get seen every day.</em>
           </h1>
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground">
-            A 60-day public challenge for Indian college students — build daily, post daily, get
+          <p className="subhead">
+            A 60-day public build challenge for Indian college students. Ship daily, post daily, get
             noticed by recruiters.
           </p>
-          <Link
-            to="/dashboard"
-            className="mt-7 inline-flex h-13 min-h-12 items-center gap-2 rounded-2xl bg-flame px-6 text-base font-bold text-primary-foreground shadow-[var(--shadow-flame)] transition-transform active:scale-95"
-          >
-            Start Day 1 <ArrowRight className="size-5" />
-          </Link>
-
-          <div className="float3d mt-12 rounded-3xl border border-border bg-card/80 p-5 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
-                Day 12 of 60
-              </span>
-              <span className="inline-flex items-center gap-1 text-sm font-black text-flame">
-                <Flame className="size-4" /> 6
-              </span>
-            </div>
-            <p className="mt-3 text-lg font-bold">Build a REST API with Express</p>
-            <div className="mt-4 flex gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-success/15 px-2.5 py-1.5 text-xs font-semibold text-success">
-                <Github className="size-3.5" /> Submitted
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-xs font-semibold text-muted-foreground">
-                <Linkedin className="size-3.5" /> Not submitted
-              </span>
-            </div>
+          <div className="cta-row">
+            <Link to="/dashboard" className="btn btn-primary">
+              Start your streak
+            </Link>
+            <Link to="/help" className="btn btn-ghost">
+              See how it works
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* How it works */}
-      <Section title="How it works">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[
-            { icon: Target, t: "Pick a track", d: "A track is your 60-day learning path — Web Dev, DSA, ML or App Dev." },
-            { icon: Rocket, t: "Build daily", d: "One task a day, sized for 45 minutes to 2 hours." },
-            { icon: Flame, t: "Prove it", d: "Proof = a GitHub link + a LinkedIn post. Both, every day." },
-          ].map((s, i) => (
-            <div key={s.t} className="rounded-2xl border border-border bg-card p-5">
-              <s.icon className="size-6 text-flame" />
-              <p className="mt-3 text-sm font-black">
-                {i + 1}. {s.t}
-              </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{s.d}</p>
-            </div>
-          ))}
-        </div>
-      </Section>
+      <div className="deck">
+        <TiltCard>
+          <svg className="card-icon filled" viewBox="0 0 24 24">
+            <path d="M12 2c1.5 4 5 5.5 5 9.5A5 5 0 0 1 7 12c0-2 1-3 1-3s.5 1.5 2 2c0-3 2-6 2-9Z" />
+          </svg>
+          <p className="card-value">4</p>
+          <p className="card-label">day streak</p>
+          <p className="card-sub">2 freezes left</p>
+        </TiltCard>
 
-      {/* Trust strip */}
-      <div className="border-y border-border bg-card/50 px-4 py-5">
-        <p className="mx-auto max-w-5xl text-center text-sm font-semibold text-muted-foreground">
-          2,400+ students · 40+ colleges · 60 days · 2 proofs a day
-        </p>
+        <TiltCard>
+          <div className="ring">
+            <span>20%</span>
+          </div>
+          <p className="card-value">12/60</p>
+          <p className="card-label">days shipped</p>
+          <p className="card-sub">day 12 in progress</p>
+        </TiltCard>
+
+        <TiltCard>
+          <svg className="card-icon" viewBox="0 0 24 24">
+            <path d="M9 19c-4 1.5-4-2.5-6-3m12 5v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19 3.4a4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.6 1.4a12.3 12.3 0 0 0-6.6 0C6.2-.5 5.1-.2 5.1-.2A4.8 4.8 0 0 0 5 3.4 5.2 5.2 0 0 0 3.7 7c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-.9 2.6V20" />
+          </svg>
+          <p className="card-label">GitHub proof</p>
+          <p className="card-sub">
+            <span className="badge-ok">✓ submitted</span> · 11:42pm
+          </p>
+        </TiltCard>
+
+        <TiltCard>
+          <svg className="card-icon" viewBox="0 0 24 24">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z" />
+            <rect x="2" y="9" width="4" height="12" />
+            <circle cx="4" cy="4" r="2" />
+          </svg>
+          <p className="card-label">LinkedIn proof</p>
+          <p className="card-sub">auto-draft caption ready</p>
+        </TiltCard>
       </div>
 
-      {/* Tracks */}
-      <Section title="Pick your track" sub="A track decides what you build for 60 days. You can only pick one.">
-        <div className="scene -mx-4 flex snap-x gap-4 overflow-x-auto px-4 pb-4">
-          {TRACKS.map((t) => (
-            <div
-              key={t.id}
-              className="card3d w-[78vw] max-w-[300px] shrink-0 snap-start rounded-2xl border border-border bg-card p-5"
-            >
-              <p className="text-base font-black">{t.label}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{t.blurb}</p>
-              <div className="mt-4 rounded-xl border border-border/70 bg-background/60 p-3">
-                <p className="text-[0.7rem] font-bold tracking-widest text-flame uppercase">Day 1</p>
-                <p className="mt-1 text-sm leading-relaxed">{t.day1}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Section>
-
-      {/* Social proof */}
-      <Section title="From students already in it">
-        <div className="grid gap-3 sm:grid-cols-3">
-          {QUOTES.map((q) => (
-            <figure key={q.name} className="rounded-2xl border border-border bg-card p-5">
-              <blockquote className="text-sm leading-relaxed">“{q.text}”</blockquote>
-              <figcaption className="mt-3 text-xs text-muted-foreground">
-                <span className="font-bold text-foreground">{q.name}</span> · {q.college} · {q.track}
-              </figcaption>
-            </figure>
-          ))}
-        </div>
-      </Section>
-
-      {/* Streak explainer */}
-      <Section
-        title="How the streak works"
-        sub="A streak is the number of days in a row you submitted both proofs."
-      >
-        <div className="scene rounded-2xl border border-border bg-card p-5">
-          <div className="flex flex-wrap items-center gap-2 text-sm font-bold">
-            {["Day", "Commit", "Post", "Streak +1"].map((s, i) => (
-              <span key={s} className="flex items-center gap-2">
-                <span
-                  className={`rounded-xl px-3 py-2 ${i === 3 ? "bg-flame text-primary-foreground" : "bg-muted text-foreground"}`}
-                >
-                  {s}
-                </span>
-                {i < 3 && <ArrowRight className="size-4 text-muted-foreground" />}
-              </span>
-            ))}
-          </div>
-          <div className="mt-5 flex gap-3 rounded-xl border border-border/70 bg-background/60 p-4">
-            <Snowflake className="size-5 shrink-0 text-muted-foreground" />
-            <p className="text-sm leading-relaxed text-muted-foreground">
-              <span className="font-bold text-foreground">Streak freezes:</span> you get 2 for the
-              whole 60 days. Miss a day and a freeze is used automatically so your streak survives.
-              Once both are gone, a missed day resets the streak — but never your total progress.
-            </p>
-          </div>
-        </div>
-      </Section>
-
-      {/* FAQ */}
-      <Section title="Questions">
-        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card">
-          {FAQS.map((f) => (
-            <Faq key={f.q} {...f} />
-          ))}
-        </div>
-      </Section>
-
-      {/* Final CTA */}
-      <section className="ember-grid px-4 py-14 text-center">
-        <h2 className="text-2xl font-black">Day 1 takes 45 minutes.</h2>
-        <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
-          No signup, no payment. Start now and post your first proof tonight.
-        </p>
-        <Link
-          to="/dashboard"
-          className="mt-6 inline-flex h-13 min-h-12 items-center gap-2 rounded-2xl bg-flame px-6 text-base font-bold text-primary-foreground shadow-[var(--shadow-flame)] active:scale-95"
-        >
-          Start Your Streak <Flame className="size-5" />
-        </Link>
-      </section>
-
-      <footer className="bg-primary px-4 py-10 text-center text-xs text-primary-foreground/80">
-        <p className="text-sm font-extrabold text-primary-foreground">ABTalks</p>
-        <p className="mt-2">Built for Indian college students · Demo data</p>
-      </footer>
+      <div className="status-bar">
+        <span className="live-dot" />
+        <span>day 12 of 60</span>
+        <span className="dot-sep">·</span>
+        <span>4-day streak</span>
+        <span className="dot-sep">·</span>
+        <span>2 freezes left</span>
+        <span className="dot-sep">·</span>
+        <span>#abtalkschallenge</span>
+      </div>
     </div>
   );
 }
 
-function Section({
-  title,
-  sub,
-  children,
-}: {
-  title: string;
-  sub?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mx-auto max-w-5xl px-4 py-12">
-      <h2 className="text-xl font-black tracking-tight">{title}</h2>
-      {sub && <p className="mt-1.5 text-sm text-muted-foreground">{sub}</p>}
-      <div className="mt-6">{children}</div>
-    </section>
-  );
-}
+function TiltCard({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
 
-function Faq({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
+  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const inner = ref.current;
+    if (!inner) return;
+    const rect = inner.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    inner.style.transform = `rotateY(${(px - 0.5) * 12}deg) rotateX(${(0.5 - py) * 12}deg) translateZ(10px)`;
+    inner.style.setProperty("--mx", `${px * 100}%`);
+    inner.style.setProperty("--my", `${py * 100}%`);
+  };
+
+  const onLeave = () => {
+    const inner = ref.current;
+    if (inner) inner.style.transform = "";
+  };
+
   return (
-    <div>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex min-h-12 w-full items-center justify-between gap-3 px-5 py-4 text-left text-sm font-bold"
-      >
-        {q}
-        <ChevronDown className={`size-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && <p className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">{a}</p>}
+    <div className="tilt-card" onMouseMove={onMove} onMouseLeave={onLeave}>
+      <div className="tilt-card-inner" ref={ref}>
+        <div className="card-glare" />
+        {children}
+      </div>
     </div>
   );
 }
