@@ -1,8 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Flame, Snowflake, Info, X, Lock, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useAbtalks } from "@/hooks/useAbtalks";
-import { useSession } from "@/hooks/useSession";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -22,14 +20,8 @@ export const Route = createFileRoute("/dashboard")({
 function Dashboard() {
   const { ready, student, days, getSubmission, completeProfile, dismissNudge, nudgeDismissed } =
     useAbtalks();
-  const session = useSession();
-  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (ready && !session) navigate({ to: "/login" });
-  }, [ready, session, navigate]);
-
-  if (!ready || !session) return <div className="min-h-screen bg-background" />;
+  if (!ready) return <div className="min-h-screen bg-background" />;
 
   const today = days.find((d) => d.day === student.currentDay)!;
   const todaySub = getSubmission(student.currentDay);
@@ -54,11 +46,7 @@ function Dashboard() {
             <p className="truncate text-xs text-muted-foreground">
               {student.college} · {student.track}
             </p>
-            <p className="truncate font-mono text-[0.65rem] text-muted-foreground/80">
-              {session.email}
-            </p>
           </div>
-
           <Link to="/" className="ml-auto text-xs font-semibold text-muted-foreground">
             Home
           </Link>

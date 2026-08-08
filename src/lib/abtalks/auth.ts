@@ -1,12 +1,6 @@
 const KEY = "abtalks.session.v1";
 
-export type Session = {
-  name: string;
-  email: string;
-  college?: string;
-  track?: string;
-  trackId?: string;
-};
+export type Session = { name: string; email: string; college?: string; track?: string };
 
 type Listener = () => void;
 const listeners = new Set<Listener>();

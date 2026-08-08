@@ -1,4 +1,3 @@
-import { getSession } from "./auth";
 import { CHALLENGE_DAYS, CURRENT_DAY, STUDENT } from "./data";
 import type { ChallengeDay, Student, Submission } from "./types";
 
@@ -141,19 +140,8 @@ export function getStudent(): Student {
       (b.id === "finisher" && completed >= 60),
   }));
 
-  const session = getSession();
-
   return {
     ...STUDENT,
-    ...(session
-      ? {
-          id: `stu_${session.email}`,
-          name: session.name,
-          college: session.college?.trim() ? session.college : "Add your college",
-          track: session.track ?? STUDENT.track,
-          trackId: session.trackId ?? STUDENT.trackId,
-        }
-      : {}),
     currentStreak: streak,
     longestStreak: Math.max(longest, streak),
     freezesAvailable: totalFreezes - freezesUsed,

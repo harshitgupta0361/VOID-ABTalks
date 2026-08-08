@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { signIn } from "@/lib/abtalks/auth";
 import { TRACKS } from "@/lib/abtalks/data";
-import { AuthShell, Field, SubmitButton } from "./login";
+import { AuthShell, Field } from "./login";
 
 export const Route = createFileRoute("/signup")({
   head: () => ({
@@ -26,7 +26,7 @@ function SignupPage() {
   const [email, setEmail] = useState("");
   const [college, setCollege] = useState("");
   const [password, setPassword] = useState("");
-  const [trackId, setTrackId] = useState<string>(TRACKS[0]!.id);
+  const [track, setTrack] = useState<string>(TRACKS[0]!.label);
   const [error, setError] = useState("");
 
   function handleSubmit(e: React.FormEvent) {
@@ -35,20 +35,12 @@ function SignupPage() {
       setError("Add your name, a valid email and a password of at least 6 characters.");
       return;
     }
-    const track = TRACKS.find((t) => t.id === trackId)!;
-    signIn({
-      name: name.trim(),
-      email: email.trim(),
-      college: college.trim(),
-      track: track.label,
-      trackId: track.id,
-    });
+    signIn({ name: name.trim(), email, college: college.trim(), track });
     navigate({ to: "/dashboard" });
   }
 
   return (
     <AuthShell
-      eyebrow="join the challenge"
       title="Start your streak"
       sub="Free for students. Pick a track and Day 1 is waiting for you."
     >
@@ -57,28 +49,33 @@ function SignupPage() {
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@college.edu" />
         <Field label="College" value={college} onChange={setCollege} placeholder="NIT Trichy" />
         <label className="block">
-          <span className="font-mono text-[0.65rem] tracking-[0.18em] text-muted-foreground uppercase">
+          <span className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
             Track
           </span>
           <select
-            value={trackId}
-            onChange={(e) => setTrackId(e.target.value)}
-            className="mt-2 h-12 w-full rounded-xl border border-border bg-background/60 px-3 text-base outline-none transition-colors focus:border-flame focus:ring-2 focus:ring-flame/25"
+            value={track}
+            onChange={(e) => setTrack(e.target.value)}
+            className="mt-1.5 h-12 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-flame"
           >
             {TRACKS.map((t) => (
-              <option key={t.id} value={t.id}>
+              <option key={t.id} value={t.label}>
                 {t.label}
               </option>
             ))}
           </select>
         </label>
         <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 6 characters" />
-        {error && <p className="font-mono text-xs text-destructive">{error}</p>}
-        <SubmitButton>Create account</SubmitButton>
+        {error && <p className="text-xs font-semibold text-destructive">{error}</p>}
+        <button
+          type="submit"
+          className="h-12 w-full rounded-xl bg-flame text-sm font-bold text-primary-foreground shadow-[var(--shadow-flame)] active:scale-[0.99]"
+        >
+          Create account
+        </button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <Link to="/login" className="font-semibold text-flame underline underline-offset-4">
+        <Link to="/login" className="font-bold text-foreground underline underline-offset-4">
           Log in
         </Link>
       </p>

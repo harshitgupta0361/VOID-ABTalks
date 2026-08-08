@@ -29,30 +29,30 @@ function LoginPage() {
       setError("Enter a valid email and a password of at least 6 characters.");
       return;
     }
-    const raw = email.split("@")[0]!.replace(/[._-]+/g, " ").trim();
-    const name = raw
-      .split(" ")
-      .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-      .join(" ");
+    const name = email.split("@")[0]!.replace(/[._]/g, " ");
     signIn({ name, email });
     navigate({ to: "/dashboard" });
   }
 
   return (
     <AuthShell
-      eyebrow="student access"
       title="Welcome back"
       sub="Log in to keep your streak, proofs and badges in one place."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@college.edu" />
         <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
-        {error && <p className="font-mono text-xs text-destructive">{error}</p>}
-        <SubmitButton>Log in</SubmitButton>
+        {error && <p className="text-xs font-semibold text-destructive">{error}</p>}
+        <button
+          type="submit"
+          className="h-12 w-full rounded-xl bg-flame text-sm font-bold text-primary-foreground shadow-[var(--shadow-flame)] active:scale-[0.99]"
+        >
+          Log in
+        </button>
       </form>
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-5 text-center text-sm text-muted-foreground">
         New here?{" "}
-        <Link to="/signup" className="font-semibold text-flame underline underline-offset-4">
+        <Link to="/signup" className="font-bold text-foreground underline underline-offset-4">
           Create a free account
         </Link>
       </p>
@@ -60,53 +60,25 @@ function LoginPage() {
   );
 }
 
-export function SubmitButton({ children }: { children: React.ReactNode }) {
-  return (
-    <button
-      type="submit"
-      className="h-12 w-full rounded-xl bg-flame font-mono text-sm font-semibold tracking-wide text-primary-foreground transition-transform active:scale-[0.99]"
-    >
-      {children}
-    </button>
-  );
-}
-
 export function AuthShell({
-  eyebrow,
   title,
   sub,
   children,
 }: {
-  eyebrow: string;
   title: string;
   sub: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="grid-floor pointer-events-none absolute inset-0 opacity-50" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 size-[420px] -translate-x-1/2">
-        <div className="ember-glow ember-glow-1" />
-        <div className="ember-glow ember-glow-2" />
-      </div>
-
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-28">
-        <p className="font-mono text-[0.7rem] tracking-[0.28em] text-flame uppercase">{eyebrow}</p>
-        <h1 className="font-display mt-3 text-4xl leading-tight font-medium tracking-tight">
-          {title}
-        </h1>
-        <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{sub}</p>
-
-        <div className="mt-8 rounded-2xl border border-border bg-card/70 p-6 shadow-[0_26px_50px_-30px_oklch(0_0_0/75%)] backdrop-blur-xl">
-          {children}
+    <div className="min-h-screen bg-background text-foreground">
+      <section className="bg-primary px-4 py-10 text-primary-foreground">
+        <div className="mx-auto max-w-md">
+          <h1 className="text-2xl font-black tracking-tight sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-sm text-primary-foreground/80">{sub}</p>
         </div>
-
-        <Link
-          to="/"
-          className="mt-6 text-center font-mono text-xs text-muted-foreground hover:text-foreground"
-        >
-          ← back to abtalks
-        </Link>
+      </section>
+      <div className="mx-auto max-w-md px-4 py-10">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">{children}</div>
       </div>
     </div>
   );
@@ -127,7 +99,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <span className="font-mono text-[0.65rem] tracking-[0.18em] text-muted-foreground uppercase">
+      <span className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
         {label}
       </span>
       <input
@@ -135,7 +107,7 @@ export function Field({
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-2 h-12 w-full rounded-xl border border-border bg-background/60 px-3 text-base outline-none transition-colors focus:border-flame focus:ring-2 focus:ring-flame/25"
+        className="mt-1.5 h-12 w-full rounded-xl border border-input bg-background px-3 text-base outline-none focus:border-flame focus:ring-2 focus:ring-flame/30"
       />
     </label>
   );

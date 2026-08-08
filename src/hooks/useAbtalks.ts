@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import * as svc from "@/lib/abtalks/service";
-import { subscribeAuth } from "@/lib/abtalks/auth";
 
 export function useAbtalks() {
   const [, setTick] = useState(0);
@@ -9,12 +8,9 @@ export function useAbtalks() {
   useEffect(() => {
     svc.ensureSeeded();
     setReady(true);
-    const bump = () => setTick((t) => t + 1);
-    const unsub = svc.subscribe(bump);
-    const unsubAuth = subscribeAuth(bump);
+    const unsub = svc.subscribe(() => setTick((t) => t + 1));
     return () => {
       unsub();
-      unsubAuth();
     };
   }, []);
 
