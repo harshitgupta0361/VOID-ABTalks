@@ -72,6 +72,28 @@ const TITLES: Record<string, string[]> = {
     "Dijkstra's Shortest Path",
     "Dynamic Programming Kickoff",
   ],
+  ml: [
+    "Pandas: Load & Profile a CSV",
+    "Data Cleaning & Missing Values",
+    "Exploratory Plots with Matplotlib",
+    "Feature Scaling & Encoding",
+    "Train/Test Splits Done Right",
+    "Linear Regression from Scratch",
+    "Logistic Regression Classifier",
+    "Confusion Matrix & Metrics",
+    "Cross Validation",
+    "Decision Trees",
+    "Random Forests & Feature Importance",
+    "Gradient Boosting Basics",
+    "Unsupervised: K-Means",
+    "Dimensionality Reduction with PCA",
+    "NLP: Bag of Words & TF-IDF",
+    "Intro to Neural Networks",
+    "Training a CNN on Images",
+    "Transfer Learning",
+    "Model Serialisation & Inference API",
+    "Deploy Your Model",
+  ],
   appdev: [
     "React Native Setup & First Screen",
     "Styling with Flexbox on Mobile",
@@ -96,6 +118,8 @@ const TITLES: Record<string, string[]> = {
   ],
 };
 
+const PHASES = ["Foundations", "Applied", "Advanced"] as const;
+
 const GOALS = [
   "Understand why structure beats styling early on.",
   "Middleware order matters more than you think.",
@@ -110,7 +134,28 @@ const GOALS = [
 const TIMES = ["45 min", "1 hr", "1.5 hrs", "2 hrs"];
 const DIFFS = ["Easy", "Medium", "Hard"] as const;
 
-const TRACK_ORDER = ["fullstack", "dsa", "appdev"];
+const RESOURCES: Record<string, { label: string; url: string }[]> = {
+  fullstack: [
+    { label: "MDN Web Docs", url: "https://developer.mozilla.org" },
+    { label: "Full Stack roadmap", url: "https://roadmap.sh/full-stack" },
+    { label: "Reference repo", url: "https://github.com" },
+  ],
+  dsa: [
+    { label: "NeetCode patterns", url: "https://neetcode.io" },
+    { label: "DSA roadmap", url: "https://roadmap.sh/datastructures-and-algorithms" },
+    { label: "Practice set", url: "https://leetcode.com" },
+  ],
+  ml: [
+    { label: "scikit-learn docs", url: "https://scikit-learn.org" },
+    { label: "AI/ML roadmap", url: "https://roadmap.sh/ai-data-scientist" },
+    { label: "Kaggle datasets", url: "https://kaggle.com" },
+  ],
+  appdev: [
+    { label: "React Native docs", url: "https://reactnative.dev" },
+    { label: "Android roadmap", url: "https://roadmap.sh/android" },
+    { label: "Reference repo", url: "https://github.com" },
+  ],
+};
 
 export const CURRENT_DAY = 12;
 const MISSED_DAYS = [4, 9];
@@ -122,36 +167,88 @@ function statusFor(day: number): DayStatus {
   return "completed";
 }
 
-export const CHALLENGE_DAYS: ChallengeDay[] = Array.from({ length: 60 }, (_, i) => {
-  const day = i + 1;
-  const trackId = TRACK_ORDER[Math.floor(i / 20)]!;
+export const DEFAULT_TRACK_ID = "fullstack";
+
+const cache = new Map<string, ChallengeDay[]>();
+
+/** 60 mock days generated for one specific track. */
+export function buildDaysForTrack(trackIdRaw?: string): ChallengeDay[] {
+  const trackId = trackIdRaw && TITLES[trackIdRaw] ? trackIdRaw : DEFAULT_TRACK_ID;
+  const cached = cache.get(trackId);
+  if (cached) return cached;
+
   const track = TRACKS.find((t) => t.id === trackId)!;
-  const title = TITLES[trackId]![i % 20]!;
-  return {
-    day,
-    title,
-    trackId,
-    trackLabel: track.label,
-    shortTask: `Build and push: ${title.toLowerCase()}. Keep it small, keep it shipped.`,
-    detailedTask: `Today you will work through "${title}" end to end. Start by scoping the smallest version that still works, then build it in one sitting. Commit at least three times with meaningful messages so your progress is readable. When it runs, write two lines in your README about what broke and how you fixed it — that becomes your LinkedIn post. Do not chase perfection; chase a working artifact you can link to.`,
-    learningGoal: GOALS[i % GOALS.length]!,
-    estimatedTime: TIMES[i % TIMES.length]!,
-    difficulty: DIFFS[i % 3]!,
-    resources: [
-      { label: "MDN Web Docs", url: "https://developer.mozilla.org" },
-      { label: `${track.label} roadmap`, url: "https://roadmap.sh" },
-      { label: "Reference repo", url: "https://github.com" },
-    ],
-    status: statusFor(day),
-  };
-});
+  const titles = TITLES[trackId]!;
+
+  const days = Array.from({ length: 60 }, (_, i) => {
+    const day = i + 1;
+    const phase = PHASES[Math.floor(i / 20)]!;
+    const base = titles[i % 20]!;
+    const title = i < 20 ? base : `${base} · ${phase}`;
+    return {
+      day,
+      title,
+      trackId,
+      trackLabel: track.label,
+      shortTask: `Build and push: ${base.toLowerCase()}. Keep it small, keep it shipped.`,
+      detailedTask: `Today you will work through "${title}" end to end as part of the ${track.label} track. Start by scoping the smallest version that still works, then build it in one sitting. Commit at least three times with meaningful messages so your progress is readable. When it runs, write two lines in your README about what broke and how you fixed it — that becomes your LinkedIn post. Do not chase perfection; chase a working artifact you can link to.`,
+      learningGoal: GOALS[i % GOALS.length]!,
+      estimatedTime: TIMES[i % TIMES.length]!,
+      difficulty: DIFFS[i % 3]!,
+      resources: RESOURCES[trackId]!,
+      status: statusFor(day),
+    } satisfies ChallengeDay;
+  });
+
+  cache.set(trackId, days);
+  return days;
+}
+
+export const CHALLENGE_DAYS: ChallengeDay[] = buildDaysForTrack(DEFAULT_TRACK_ID);
 
 export const BADGES: Badge[] = [
-  { id: "first-proof", label: "First Proof", icon: "sparkles", earned: true },
-  { id: "week-one", label: "7-Day Streak", icon: "flame", earned: true },
-  { id: "night-owl", label: "Night Owl", icon: "moon", earned: false },
-  { id: "half-way", label: "Day 30 Club", icon: "trophy", earned: false },
-  { id: "finisher", label: "60/60 Finisher", icon: "crown", earned: false },
+  {
+    id: "first-proof",
+    label: "First Steps",
+    icon: "sparkles",
+    earned: false,
+    description: "Submitted both proofs for your very first day.",
+  },
+  {
+    id: "week-one",
+    label: "Week Warrior",
+    icon: "flame",
+    earned: false,
+    description: "Kept a 7-day streak alive.",
+  },
+  {
+    id: "night-owl",
+    label: "Night Owl",
+    icon: "moon",
+    earned: false,
+    description: "Shipped proof on 3 different days.",
+  },
+  {
+    id: "consistent",
+    label: "Consistency Club",
+    icon: "target",
+    earned: false,
+    description: "Completed 10 days of the challenge.",
+  },
+  {
+    id: "half-way",
+    label: "Halfway Hero",
+    icon: "trophy",
+    earned: false,
+    description: "Reached 30 completed days — halfway there.",
+  },
+  {
+    id: "finisher",
+    label: "60/60 Finisher",
+    icon: "crown",
+    earned: false,
+    description: "Completed all 60 days of the challenge.",
+  },
 ];
 
 export const STUDENT: Student = {

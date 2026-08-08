@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as DayDayIdRouteImport } from './routes/day.$dayId'
 
@@ -36,6 +37,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
   '/day/$dayId': typeof DayDayIdRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
   '/day/$dayId': typeof DayDayIdRoute
 }
@@ -69,20 +77,36 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/profile': typeof ProfileRoute
   '/signup': typeof SignupRoute
   '/day/$dayId': typeof DayDayIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/help' | '/login' | '/signup' | '/day/$dayId'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/help'
+    | '/login'
+    | '/profile'
+    | '/signup'
+    | '/day/$dayId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/help' | '/login' | '/signup' | '/day/$dayId'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/help'
+    | '/login'
+    | '/profile'
+    | '/signup'
+    | '/day/$dayId'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/help'
     | '/login'
+    | '/profile'
     | '/signup'
     | '/day/$dayId'
   fileRoutesById: FileRoutesById
@@ -92,6 +116,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
+  ProfileRoute: typeof ProfileRoute
   SignupRoute: typeof SignupRoute
   DayDayIdRoute: typeof DayDayIdRoute
 }
@@ -126,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -148,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
+  ProfileRoute: ProfileRoute,
   SignupRoute: SignupRoute,
   DayDayIdRoute: DayDayIdRoute,
 }

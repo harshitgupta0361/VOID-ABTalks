@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Flame, LogOut, Menu, X } from "lucide-react";
+import { Flame, LogOut, Menu, User, X } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { initials, signOut } from "@/lib/abtalks/auth";
 
@@ -15,6 +15,7 @@ export function SiteNav() {
   const [scrolled, setScrolled] = useState(false);
   const [hovering, setHovering] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const lastY = useRef(0);
   const ticking = useRef(false);
   const session = useSession();
@@ -95,21 +96,72 @@ export function SiteNav() {
 
           <div className="ml-auto flex items-center gap-2">
             {session ? (
-              <>
-                <span className="font-mono grid size-9 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
-                  {initials(session.name)}
-                </span>
+              <div className="relative">
                 <button
-                  onClick={() => {
-                    signOut();
-                    navigate({ to: "/" });
-                  }}
-                  aria-label="Log out"
-                  className="inline-flex h-10 items-center gap-1.5 rounded-full border border-input px-3 text-sm text-foreground transition-colors hover:border-primary hover:bg-primary/10"
+                  type="button"
+                  onClick={() => setAccountOpen((o) => !o)}
+                  aria-haspopup="menu"
+                  aria-expanded={accountOpen}
+                  className="flex items-center gap-2 rounded-full border border-input py-1 pr-3 pl-1 transition-colors hover:border-primary hover:bg-primary/10"
                 >
-                  <LogOut className="size-4" />
+                  {session.avatar ? (
+                    <img
+                      src={session.avatar}
+                      alt=""
+                      className="size-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <span className="font-mono grid size-8 place-items-center rounded-full bg-primary text-[11px] font-semibold text-primary-foreground">
+                      {initials(session.name)}
+                    </span>
+                  )}
+                  <span className="font-mono hidden max-w-[110px] truncate text-[13px] text-foreground sm:inline">
+                    {session.name.split(" ")[0]?.toLowerCase()}
+                  </span>
                 </button>
-              </>
+
+                {accountOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      aria-hidden
+                      onClick={() => setAccountOpen(false)}
+                    />
+                    <div
+                      role="menu"
+                      className="absolute right-0 z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-background/95 p-1.5 shadow-[0_26px_50px_-30px_oklch(0_0_0/75%)] backdrop-blur-xl"
+                    >
+                      <p className="truncate px-3 pt-2 pb-1 font-mono text-[11px] text-muted-foreground">
+                        {session.email}
+                      </p>
+                      <Link
+                        to="/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <User className="size-4" /> Profile & account
+                      </Link>
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <Flame className="size-4" /> Dashboard
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setAccountOpen(false);
+                          signOut();
+                          navigate({ to: "/" });
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-primary/10"
+                      >
+                        <LogOut className="size-4" /> Sign out
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             ) : (
               <>
                 <Link

@@ -1,5 +1,5 @@
 import { getSession } from "./auth";
-import { CHALLENGE_DAYS, CURRENT_DAY, STUDENT } from "./data";
+import { buildDaysForTrack, CHALLENGE_DAYS, CURRENT_DAY, STUDENT } from "./data";
 import type { ChallengeDay, Student, Submission } from "./types";
 
 const SUB_KEY = "abtalks.submissions.v1";
@@ -89,7 +89,9 @@ export function submitProof(day: number, proof: { githubUrl?: string; linkedinUr
 
 export function getDays(): ChallengeDay[] {
   const subs = getSubmissions();
-  return CHALLENGE_DAYS.map((d) => {
+  const session = getSession();
+  const source = buildDaysForTrack(session?.trackId ?? STUDENT.trackId);
+  return source.map((d) => {
     if (subs[d.day]?.complete) return { ...d, status: "completed" as const };
     if (d.status === "completed") return { ...d, status: "missed" as const };
     return d;
@@ -131,12 +133,14 @@ export function getStudent(): Student {
   const profileComplete =
     typeof window !== "undefined" && window.localStorage.getItem(PROFILE_KEY) === "true";
 
+  const longestOverall = Math.max(longest, streak);
   const badges = STUDENT.badges.map((b) => ({
     ...b,
     earned:
       (b.id === "first-proof" && completed >= 1) ||
-      (b.id === "week-one" && longest >= 7) ||
+      (b.id === "week-one" && longestOverall >= 7) ||
       (b.id === "night-owl" && completed >= 3) ||
+      (b.id === "consistent" && completed >= 10) ||
       (b.id === "half-way" && completed >= 30) ||
       (b.id === "finisher" && completed >= 60),
   }));
@@ -152,6 +156,11 @@ export function getStudent(): Student {
           college: session.college?.trim() ? session.college : "Add your college",
           track: session.track ?? STUDENT.track,
           trackId: session.trackId ?? STUDENT.trackId,
+          email: session.email,
+          phone: session.phone,
+          github: session.github,
+          linkedin: session.linkedin,
+          avatar: session.avatar,
         }
       : {}),
     currentStreak: streak,
@@ -189,4 +198,15 @@ export function isValidUrl(value: string, host: string) {
   } catch {
     return false;
   }
+}
+
+/** Most recent missed day (<= today), or null when nothing was missed. */
+export function getLatestMissedDay(): number | null {
+  const missed = getDays().filter((d) => d.day <= CURRENT_DAY && d.status === "missed");
+  return missed.length ? missed[missed.length - 1]!.day : null;
+}
+
+/** Today's in-progress day (or the most recent day available). */
+export function getLatestDay(): number {
+  return CURRENT_DAY;
 }

@@ -16,6 +16,11 @@ export interface Student {
   totalMissed: number;
   badges: Badge[];
   profileComplete: boolean;
+  email?: string;
+  phone?: string;
+  github?: string;
+  linkedin?: string;
+  avatar?: string;
 }
 
 export interface Badge {
@@ -23,6 +28,7 @@ export interface Badge {
   label: string;
   icon: string;
   earned: boolean;
+  description: string;
 }
 
 export interface ResourceLink {
