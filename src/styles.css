@@ -536,8 +536,63 @@
 .track-option-blurb { display: block; margin-top: 2px; font-size: 12px; color: var(--paper-dim); }
 .track-help { margin-top: 10px; font-size: 12.5px; line-height: 1.7; color: var(--paper-dim); }
 
+/* ── story gap: flex-center text between deck and track section ─────── */
+/*
+  The story-gap-wrapper is a full-width flex column that vertically centers
+  its single child (the story-block) in the gap between the stats deck and
+  the track/roadmap section.  min-height sets the gap size; flexbox does the
+  centering.  On mobile the min-height is smaller so it stays compact.
+*/
+.story-gap-wrapper {
+  display: flex;
+  align-items: center;         /* vertical center */
+  min-height: clamp(18rem, 30vh, 32rem);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
 /* ── roadmap (horizontal journey timeline) ────────────────────────── */
-.roadmap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 40px clamp(20px,4vw,48px) 100px; }
+/* ── roadmap scroll-driven sticky section ──────────────────────────── */
+/*
+  Desktop: the outer section is tall (6 × 100vh) so the browser has room to
+  scroll.  The inner panel is position:sticky top:0, keeping it in view while
+  scroll position drives the active card via JS.
+  Mobile (≤ 768px): height is auto; the track is a plain horizontal swipe
+  carousel driven by IntersectionObserver instead of scroll.
+*/
+.roadmap-scroll-section {
+  position: relative;
+  z-index: 1;
+  /* 7 × 100vh: 1 viewport per step (6 steps) + 1 extra for the sticky header panel */
+  height: 700vh;
+}
+.roadmap-scroll-section.is-mobile {
+  height: auto; /* no scroll-hijack on touch */
+}
+.roadmap-sticky-panel {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.roadmap-scroll-section.is-mobile .roadmap-sticky-panel {
+  position: static;
+  height: auto;
+  overflow: visible;
+}
+
+/* Remove arrows variant */
+.roadmap-stage--no-arrows {
+  padding: 0; /* rail fills full width — no space reserved for arrow buttons */
+}
+.roadmap-stage--no-arrows .roadmap-rail {
+  width: 100%;
+}
+
+.roadmap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; width: 100%; padding: 40px clamp(20px,4vw,48px) 100px; }
 .roadmap-head { text-align: center; display: grid; justify-items: center; }
 .roadmap-eyebrow, .focus-eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--pulse); }
 .roadmap-eyebrow { padding: 6px 14px; border-radius: 999px; border: 1px solid color-mix(in oklab, var(--pulse) 45%, transparent);
@@ -556,15 +611,41 @@
   box-shadow: 0 0 24px -8px color-mix(in oklab, var(--pulse) 80%, transparent); }
 .roadmap-arrow:disabled { opacity: .35; }
 
-.roadmap-rail { position: relative; flex: 1 1 auto; min-width: 0; }
+.roadmap-rail {
+  position: relative; flex: 1 1 auto; min-width: 0;
+  /* clip cards that slide off-screen during translateX animation */
+  overflow: hidden;
+  /* vertical breathing room so scale(1.06) box-shadows aren't clipped */
+  padding: 8px 0;
+}
 .roadmap-line { position: absolute; left: 0; right: 0; top: 50%; height: 1px;
   background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pulse) 70%, transparent), transparent);
   box-shadow: 0 0 16px color-mix(in oklab, var(--pulse) 45%, transparent); pointer-events: none; }
 .roadmap-pulse { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; translate: -50% -50%;
   background: var(--pulse); box-shadow: 0 0 22px 3px color-mix(in oklab, var(--pulse) 75%, transparent);
   transition: left .45s cubic-bezier(.4,0,.2,1); pointer-events: none; }
-.roadmap-track { display: flex; align-items: center; gap: 14px; overflow-x: auto; padding: 46px 4px; perspective: 1200px; scrollbar-width: none; -ms-overflow-style: none; }
-.roadmap-track::-webkit-scrollbar { display: none; }
+.roadmap-track {
+  display: flex; align-items: center; gap: 14px;
+  /* No overflow-x — translateX handles centering instead of scroll position */
+  padding: 46px 0;
+  perspective: 1200px;
+  /* position:relative makes this the offsetParent for cards,
+     so card.offsetLeft is relative to track start (what computeOffset needs) */
+  position: relative;
+  /* Smooth translateX as active card changes */
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+/* Mobile: restore swipe-scroll carousel (translateX is not applied on mobile) */
+.roadmap-scroll-section.is-mobile .roadmap-track {
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.roadmap-scroll-section.is-mobile .roadmap-track::-webkit-scrollbar { display: none; }
+.roadmap-scroll-section.is-mobile .roadmap-card { scroll-snap-align: center; }
 .roadmap-card { flex: 0 0 clamp(210px, 22vw, 250px); list-style: none;
   transition: transform .45s cubic-bezier(.4,0,.2,1), opacity .45s ease; }
 .roadmap-card.is-past, .roadmap-card.is-next { transform: scale(.9); opacity: .5; }
@@ -661,6 +742,74 @@
 @media (prefers-reduced-motion: reduce) {
   .focus-core, .focus-core-orb { animation: none; transition: none; }
   .focus-title, .focus-desc { animation: none; }
+}
+
+
+/* ── story block: glow-curve concave text wrap ────────────────────── */
+/*
+  On desktop the fixed glow (ember-core) sits at roughly right:-60px, top:50%
+  of the viewport. A right-floated invisible element with shape-outside:circle()
+  creates a concave exclusion zone: lines near the glow's vertical centre are
+  shorter (pulled away from the light), lines at the top/bottom of the block
+  extend further right. Mobile falls back to the plain max-width column.
+*/
+.story-block {
+  max-width: 600px; /* mobile / narrow default — same column width as before */
+}
+.story-block::after {
+  content: "";
+  display: block;
+  clear: both; /* ensures container wraps the float */
+}
+.story-glow-float {
+  display: none; /* hidden on mobile */
+}
+
+/* Medium desktop: effect kicks in, text expands and curves toward the glow */
+@media (min-width: 960px) {
+  .story-block {
+    max-width: none; /* uncap — text can now reach toward the glow */
+  }
+  .story-glow-float {
+    display: block;
+    float: right;
+    /* Width covers the zone from where text currently ends to near the glow */
+    width: 240px;
+    /* Height must cover all paragraphs so the curve runs top-to-bottom */
+    height: 620px;
+    pointer-events: none;
+    user-select: none;
+    /*
+      Circle math (at 960px viewport, 48px left padding):
+        Block width ≈ 912px. Float right edge = 912px, left edge = 672px.
+        Glow centre ≈ viewport_width − 290px = 670px from viewport left
+                     = 670 − 48 = 622px from block left = 50px inside the float.
+        We want text pulled back ~60px at vertical centre and fading out
+        over ±180px above/below. Circle centred at (66% of float = 158px, 44%
+        of height = 273px), radius 220px:
+          At dy=0  : exclusion extends to 158−220 = −62px → 62px beyond float left
+          At dy=100: 158−√(220²−100²) = 158−196 = −38px → 38px beyond
+          At dy=180: 158−√(220²−180²) = 158−128 = +30px → inside float (no extra)
+    */
+    shape-outside: circle(220px at 66% 44%);
+  }
+}
+
+/* Wider desktop: scale up so the curve stays proportional to the larger glow */
+@media (min-width: 1200px) {
+  .story-glow-float {
+    width: 340px;
+    height: 640px;
+    /*
+      At 1200px viewport: block width ≈ 1152px. Float left edge = 812px.
+      Glow centre ≈ 1200−290 = 910px from left = 98px inside float.
+      Circle at (67% = 228px, 44% = 282px), radius 310px:
+        At dy=0  : 228−310 = −82px beyond float → 82px pulled back
+        At dy=150: 228−√(310²−150²) = 228−274 = −46px → 46px pulled back
+        At dy=260: inside float (no extra exclusion)
+    */
+    shape-outside: circle(310px at 67% 44%);
+  }
 }
 
 /* ── footer ───────────────────────────────────────────────────────── */
