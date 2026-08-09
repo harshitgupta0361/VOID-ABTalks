@@ -13,6 +13,7 @@ import {
   Sparkles,
   ExternalLink,
   AlertCircle,
+  Lock,
 } from "lucide-react";
 import { useAbtalks } from "@/hooks/useAbtalks";
 import { generateCaption, isValidUrl } from "@/lib/abtalks/service";
@@ -39,7 +40,7 @@ function DayDetail() {
   const { dayId } = Route.useParams();
   const dayNum = Number(dayId);
   const navigate = useNavigate();
-  const { ready, days, student, getSubmission, submitProof } = useAbtalks();
+  const { ready, days, student, getSubmission, getDeadline, submitProof } = useAbtalks();
 
   const [github, setGithub] = useState("");
   const [linkedin, setLinkedin] = useState("");
@@ -83,8 +84,31 @@ function DayDetail() {
     );
   }
 
+  if (day.status === "locked") {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background px-4 text-center">
+        <div className="max-w-sm rounded-3xl border border-border bg-card p-8">
+          <Lock className="mx-auto size-6 text-muted-foreground" />
+          <h1 className="mt-4 text-xl font-black">Day {dayNum} is locked</h1>
+          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+            Complete Day {student.currentDay} to unlock Day {student.currentDay + 1}. Days open one
+            at a time — each has a 24-hour window.
+          </p>
+          <Link
+            to="/day/$dayId"
+            params={{ dayId: String(student.currentDay) }}
+            className="mt-5 inline-flex h-12 items-center rounded-xl bg-flame px-5 text-sm font-bold text-primary-foreground"
+          >
+            Go to Day {student.currentDay}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const submission = sub!;
-  const isPastIncomplete = dayNum < student.currentDay && !submission.complete;
+  const isPastIncomplete = day.status === "missed" && !submission.complete;
+  const deadline = getDeadline(dayNum);
   const canSave = Boolean(github.trim() || linkedin.trim()) && githubOk && linkedinOk;
 
   function handleSave() {
@@ -132,15 +156,23 @@ function DayDetail() {
           ) : (
             <span />
           )}
-          {dayNum < 60 && (
-            <Link
-              to="/day/$dayId"
-              params={{ dayId: String(dayNum + 1) }}
-              className="inline-flex h-11 items-center rounded-xl bg-muted px-3 text-xs font-bold"
-            >
-              Day {dayNum + 1} →
-            </Link>
-          )}
+          {dayNum < 60 &&
+            (days.find((d) => d.day === dayNum + 1)?.status === "locked" ? (
+              <span
+                title={`Complete Day ${dayNum} to unlock Day ${dayNum + 1}`}
+                className="inline-flex h-11 items-center gap-1.5 rounded-xl bg-muted/60 px-3 text-xs font-bold text-muted-foreground/70"
+              >
+                <Lock className="size-3.5" /> Day {dayNum + 1}
+              </span>
+            ) : (
+              <Link
+                to="/day/$dayId"
+                params={{ dayId: String(dayNum + 1) }}
+                className="inline-flex h-11 items-center rounded-xl bg-muted px-3 text-xs font-bold"
+              >
+                Day {dayNum + 1} →
+              </Link>
+            ))}
         </div>
 
         {/* Header */}
@@ -155,6 +187,11 @@ function DayDetail() {
                 <Clock className="size-3.5" /> {day.estimatedTime}
               </span>
               <span className="rounded-lg bg-muted px-2.5 py-1.5">{day.difficulty}</span>
+              {day.status === "in-progress" && deadline && (
+                <span className="inline-flex items-center gap-1.5 rounded-lg bg-muted px-2.5 py-1.5 text-muted-foreground">
+                  <Clock className="size-3.5" /> {hoursLeft(deadline)}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -317,6 +354,14 @@ function DayDetail() {
       </div>
     </div>
   );
+}
+
+function hoursLeft(deadline: number) {
+  const ms = deadline - Date.now();
+  if (ms <= 0) return "Window closed";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m left` : `${m}m left`;
 }
 
 function Chip({ ok, at }: { ok: boolean; at: string | null }) {

@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { Flame, LogOut, Menu, User, X } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { initials, signOut } from "@/lib/abtalks/auth";
+import { toast } from "sonner";
+
 
 const NAV_LINKS = [
-  { to: "/", label: "home" },
-  { to: "/dashboard", label: "dashboard" },
-  { to: "/help", label: "help" },
+  { to: "/", label: "Home" },
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/help", label: "Help" },
 ] as const;
 
 export function SiteNav() {
@@ -75,11 +77,18 @@ export function SiteNav() {
             aria-label="ABTalks home"
             onClick={() => setMenuOpen(false)}
           >
-            <Flame className="logo-flame size-[18px] fill-primary text-primary" />
-            <span className="font-mono text-[15px] font-medium tracking-[-0.01em] lowercase">
+            <Flame className="logo-flame size-[18px] fill-primary text-primary sm:hidden" />
+            <img
+              src="/abtalks-wordmark.png"
+              alt="ABTalks"
+              className="logo-flame hidden h-[26px] w-auto bg-transparent object-contain sm:block"
+            />
+
+            <span className="font-mono text-[15px] font-medium tracking-[-0.01em] lowercase sm:hidden">
               abtalks
             </span>
           </Link>
+
 
           <div className="ml-6 hidden items-center gap-1 md:flex">
             {NAV_LINKS.map((l) => (
@@ -87,7 +96,7 @@ export function SiteNav() {
                 key={l.to}
                 to={l.to}
                 activeProps={{ className: "text-foreground" }}
-                className="nav-link font-mono rounded-full px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                className="nav-link rounded-full px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:text-primary"
               >
                 {l.label}
               </Link>
@@ -151,8 +160,13 @@ export function SiteNav() {
                       <button
                         onClick={() => {
                           setAccountOpen(false);
+                          const who = session?.name;
                           signOut();
-                          navigate({ to: "/" });
+                          toast.success("Signed out", {
+                            description: who ? `See you soon, ${who}.` : "See you soon.",
+                            duration: 2200,
+                          });
+                          setTimeout(() => navigate({ to: "/" }), 700);
                         }}
                         className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-primary/10"
                       >
@@ -202,7 +216,7 @@ export function SiteNav() {
                   to={l.to}
                   onClick={() => setMenuOpen(false)}
                   activeProps={{ className: "text-foreground" }}
-                  className="nav-link font-mono px-1 py-3 text-[14px] text-muted-foreground transition-colors hover:text-primary"
+                  className="nav-link px-1 py-3 text-[14px] text-muted-foreground transition-colors hover:text-primary"
                 >
                   {l.label}
                 </Link>

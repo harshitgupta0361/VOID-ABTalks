@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteNav } from "../components/site-nav";
+import { Toaster } from "../components/ui/sonner";
+
 
 function NotFoundComponent() {
   return (
@@ -95,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
   }),
 
@@ -128,6 +130,14 @@ function RootComponent() {
       <SiteNav />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          className:
+            "!rounded-2xl !border !border-[color-mix(in_oklab,var(--pulse)_55%,transparent)] !bg-[oklch(0.16_0.02_250/78%)] !backdrop-blur-xl !text-foreground !font-mono !text-[13px] !shadow-[0_0_28px_-8px_color-mix(in_oklab,var(--pulse)_70%,transparent)]",
+        }}
+      />
     </QueryClientProvider>
   );
 }
+

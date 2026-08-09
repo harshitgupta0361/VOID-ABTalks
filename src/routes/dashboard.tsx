@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { BadgeIcon } from "@/components/badge-icon";
 import { useState } from "react";
-import { Flame, Snowflake, Info, X, Lock, Sparkles, ArrowRight, CheckCircle2, Award } from "lucide-react";
+import { Flame, Snowflake, Info, X, Lock, Clock, Sparkles, ArrowRight, CheckCircle2, Award } from "lucide-react";
 import { useAbtalks } from "@/hooks/useAbtalks";
 import { useSession } from "@/hooks/useSession";
 
@@ -21,8 +22,16 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function Dashboard() {
-  const { ready, student, days, getSubmission, completeProfile, dismissNudge, nudgeDismissed } =
-    useAbtalks();
+  const {
+    ready,
+    student,
+    days,
+    getSubmission,
+    getDeadline,
+    completeProfile,
+    dismissNudge,
+    nudgeDismissed,
+  } = useAbtalks();
   const session = useSession();
   const navigate = useNavigate();
   const [badgesOpen, setBadgesOpen] = useState(false);
@@ -73,13 +82,14 @@ function Dashboard() {
               {student.badges.map((b) => (
                 <span
                   key={b.id}
-                  title={b.earned ? `${b.label} — ${b.description}` : `Locked · ${b.description}`}
+                  data-tip={b.earned ? b.label : `Locked · ${b.label}`}
+                  tabIndex={0}
                   aria-label={b.label}
-                  className={`grid size-7 place-items-center rounded-lg ${
+                  className={`badge-chip grid size-7 place-items-center rounded-lg ${
                     b.earned ? "bg-flame/15 text-flame" : "bg-muted text-muted-foreground opacity-60"
                   }`}
                 >
-                  {b.earned ? <Sparkles className="size-3.5" /> : <Lock className="size-3" />}
+                  <BadgeIcon icon={b.icon} earned={b.earned} />
                 </span>
               ))}
               <button
@@ -190,6 +200,10 @@ function Dashboard() {
               >
                 Open today's task <ArrowRight className="size-4" />
               </Link>
+              <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="size-3.5" /> {timeLeftLabel(getDeadline(today.day))}
+              </p>
+
             </>
           )}
         </div>
@@ -240,26 +254,46 @@ function Dashboard() {
         <div className="mt-4 rounded-2xl border border-border bg-card p-5">
           <p className="text-sm font-black">60-day timeline</p>
           <div className="mt-3 grid grid-cols-10 gap-1.5">
-            {days.map((d) => (
-              <Link
-                key={d.day}
-                to="/day/$dayId"
-                params={{ dayId: String(d.day) }}
-                title={`Day ${d.day} · ${d.status}`}
-                className={`grid aspect-square place-items-center rounded-md text-[0.6rem] font-bold transition-transform active:scale-90 ${
-                  d.status === "completed"
-                    ? "bg-flame text-primary-foreground"
-                    : d.status === "missed"
-                      ? "bg-neutralish/30 text-muted-foreground"
-                      : d.status === "in-progress"
-                        ? "bg-flame-soft text-primary-foreground"
-                        : "bg-muted text-muted-foreground"
-                }`}
-              >
-                {d.day}
-              </Link>
-            ))}
+            {days.map((d) =>
+              d.status === "locked" ? (
+                <span
+                  key={d.day}
+                  title={`Day ${d.day} · locked — complete Day ${student.currentDay} to unlock`}
+                  aria-label={`Day ${d.day} locked`}
+                  className="grid aspect-square place-items-center rounded-md bg-muted/60 text-[0.6rem] font-bold text-muted-foreground/60"
+                >
+                  {d.day === student.currentDay + 1 ? (
+                    <Lock className="size-3" />
+                  ) : (
+                    d.day
+                  )}
+                </span>
+              ) : (
+                <Link
+                  key={d.day}
+                  to="/day/$dayId"
+                  params={{ dayId: String(d.day) }}
+                  title={`Day ${d.day} · ${d.status}`}
+                  className={`grid aspect-square place-items-center rounded-md text-[0.6rem] font-bold transition-transform active:scale-90 ${
+                    d.status === "completed"
+                      ? "bg-flame text-primary-foreground"
+                      : d.status === "missed"
+                        ? "bg-neutralish/30 text-muted-foreground"
+                        : d.status === "in-progress"
+                          ? "bg-flame-soft text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {d.day}
+                </Link>
+              ),
+            )}
           </div>
+          <p className="mt-3 flex items-center gap-1.5 text-[0.7rem] text-muted-foreground">
+            <Lock className="size-3" /> Complete Day {student.currentDay} to unlock Day{" "}
+            {Math.min(student.currentDay + 1, 60)}
+          </p>
+
         </div>
       </div>
 
@@ -296,7 +330,7 @@ function Dashboard() {
                       className="flex items-start gap-3 rounded-2xl border border-border p-3.5"
                     >
                       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-flame/15 text-flame">
-                        <Sparkles className="size-4" />
+                        <BadgeIcon icon={b.icon} className="size-4" />
                       </span>
                       <div className="min-w-0">
                         <p className="text-sm font-black">{b.label}</p>
@@ -325,6 +359,15 @@ function Dashboard() {
       )}
     </div>
   );
+}
+
+function timeLeftLabel(deadline: number | null) {
+  if (!deadline) return "24-hour window";
+  const ms = deadline - Date.now();
+  if (ms <= 0) return "Window closed";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  return h > 0 ? `${h}h ${m}m left in this 24-hour window` : `${m}m left in this 24-hour window`;
 }
 
 function Legend({ className, label }: { className: string; label: string }) {

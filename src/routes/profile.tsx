@@ -4,6 +4,7 @@ import { Camera, LogOut, Trash2, Plus, Check } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { deleteAccount, initials, signOut, updateSession } from "@/lib/abtalks/auth";
 import { TRACKS } from "@/lib/abtalks/data";
+import { toast } from "sonner";
 import { AuthShell, Field, SubmitButton } from "./login";
 
 export const Route = createFileRoute("/profile")({
@@ -245,8 +246,13 @@ function ProfilePage() {
         <button
           type="button"
           onClick={() => {
+            const who = session?.name;
             signOut();
-            navigate({ to: "/" });
+            toast.success("Signed out", {
+              description: who ? `See you soon, ${who}.` : "See you soon.",
+              duration: 2200,
+            });
+            setTimeout(() => navigate({ to: "/" }), 700);
           }}
           className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-border font-mono text-xs tracking-[0.14em] uppercase transition-colors hover:border-flame"
         >
@@ -272,7 +278,11 @@ function ProfilePage() {
                 type="button"
                 onClick={() => {
                   deleteAccount();
-                  navigate({ to: "/" });
+                  toast.success("Account deleted", {
+                    description: "Your profile, proofs and streak were wiped from this device.",
+                    duration: 2600,
+                  });
+                  setTimeout(() => navigate({ to: "/" }), 900);
                 }}
                 className="h-11 flex-1 rounded-xl bg-destructive font-mono text-xs tracking-[0.14em] text-destructive-foreground uppercase"
               >

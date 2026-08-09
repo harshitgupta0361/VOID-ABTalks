@@ -1,10 +1,11 @@
 import { getSession } from "./auth";
 import { buildDaysForTrack, CHALLENGE_DAYS, CURRENT_DAY, STUDENT } from "./data";
-import type { ChallengeDay, Student, Submission } from "./types";
+import type { ChallengeDay, DayStatus, Student, Submission } from "./types";
 
 const SUB_KEY = "abtalks.submissions.v1";
 const PROFILE_KEY = "abtalks.profileComplete.v1";
 const NUDGE_KEY = "abtalks.nudgeDismissed.v1";
+const FRESH_KEY = "abtalks.freshAccount.v1";
 
 const listeners = new Set<() => void>();
 export function subscribe(fn: () => void) {
@@ -46,13 +47,32 @@ function seed(): Record<string, Submission> {
   return map;
 }
 
+/** True for an account created in this browser that hasn't shipped anything yet. */
+export function isFreshAccount() {
+  return typeof window !== "undefined" && window.localStorage.getItem(FRESH_KEY) === "true";
+}
+
+/** Called on signup: wipes demo progress so every counter starts at zero. */
+export function markFreshAccount() {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(FRESH_KEY, "true");
+  window.localStorage.removeItem(PROFILE_KEY);
+  window.localStorage.removeItem("abtalks.unlocks.v1");
+  writeAll({});
+}
+
 export function ensureSeeded() {
   if (typeof window === "undefined") return;
+  if (isFreshAccount()) {
+    if (!window.localStorage.getItem(SUB_KEY)) writeAll({});
+    return;
+  }
   if (!window.localStorage.getItem(SUB_KEY)) writeAll(seed());
 }
 
 export function getSubmissions(): Record<string, Submission> {
   const map = readAll();
+  if (isFreshAccount()) return map;
   return Object.keys(map).length ? map : seed();
 }
 
@@ -87,25 +107,109 @@ export function submitProof(day: number, proof: { githubUrl?: string; linkedinUr
   return next;
 }
 
-export function getDays(): ChallengeDay[] {
+const UNLOCK_KEY = "abtalks.unlocks.v1";
+const DAY_MS = 86400000;
+
+function readUnlocks(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(window.localStorage.getItem(UNLOCK_KEY) ?? "{}");
+  } catch {
+    return {};
+  }
+}
+
+/** Walks the 60 days applying sequential unlocking + the 24h window. */
+function computeGating(): {
+  status: Record<number, DayStatus>;
+  unlockedAt: Record<number, number>;
+  active: number;
+} {
   const subs = getSubmissions();
+  const stored = readUnlocks();
+  const unlockedAt: Record<number, number> = {};
+  for (const [k, v] of Object.entries(stored)) {
+    const t = Date.parse(v);
+    if (!Number.isNaN(t)) unlockedAt[Number(k)] = t;
+  }
+  const now = Date.now();
+  if (!unlockedAt[1]) unlockedAt[1] = now;
+
+  const status: Record<number, DayStatus> = {};
+  let active = 1;
+
+  for (let day = 1; day <= 60; day++) {
+    const ua = unlockedAt[day];
+    if (ua === undefined) {
+      status[day] = "locked";
+      continue;
+    }
+    const sub = subs[day];
+    if (sub?.complete) {
+      status[day] = "completed";
+      const done = Math.max(
+        Date.parse(sub.githubSubmittedAt ?? "") || 0,
+        Date.parse(sub.linkedinSubmittedAt ?? "") || 0,
+      );
+      if (day < 60 && unlockedAt[day + 1] === undefined) unlockedAt[day + 1] = done || ua;
+      active = Math.min(day + 1, 60);
+    } else if (now > ua + DAY_MS) {
+      status[day] = "missed";
+      if (day < 60 && unlockedAt[day + 1] === undefined) unlockedAt[day + 1] = ua + DAY_MS;
+      active = Math.min(day + 1, 60);
+    } else {
+      status[day] = "in-progress";
+      active = day;
+      for (let rest = day + 1; rest <= 60; rest++) status[rest] = "locked";
+      break;
+    }
+  }
+
+  // persist any newly-derived unlock timestamps (no emit — avoids render loops)
+  if (typeof window !== "undefined") {
+    const next: Record<string, string> = {};
+    for (const [k, v] of Object.entries(unlockedAt)) next[k] = new Date(v).toISOString();
+    const serialized = JSON.stringify(next);
+    if (serialized !== JSON.stringify(stored)) window.localStorage.setItem(UNLOCK_KEY, serialized);
+  }
+
+  return { status, unlockedAt, active };
+}
+
+export function getDays(): ChallengeDay[] {
   const session = getSession();
   const source = buildDaysForTrack(session?.trackId ?? STUDENT.trackId);
-  return source.map((d) => {
-    if (subs[d.day]?.complete) return { ...d, status: "completed" as const };
-    if (d.status === "completed") return { ...d, status: "missed" as const };
-    return d;
-  });
+  const { status } = computeGating();
+  return source.map((d) => ({ ...d, status: status[d.day] ?? "locked" }));
+}
+
+/** True when a day is reachable (unlocked) — locked days are view-only. */
+export function isUnlocked(day: number) {
+  return computeGating().status[day] !== "locked";
+}
+
+/** Epoch ms when the 24h window for a day closes, or null when locked. */
+export function getDeadline(day: number): number | null {
+  const { unlockedAt } = computeGating();
+  const ua = unlockedAt[day];
+  return ua === undefined ? null : ua + DAY_MS;
+}
+
+/** The day the student is actually on right now. */
+export function getCurrentDay(): number {
+  return computeGating().active;
 }
 
 export function getDay(id: number): ChallengeDay | undefined {
   return getDays().find((d) => d.day === id);
 }
 
+
 /** Streak + freeze engine. Walks days 1..currentDay applying freezes to gaps. */
 export function getStudent(): Student {
   const days = getDays();
-  const upTo = days.filter((d) => d.day <= CURRENT_DAY);
+  const current = getCurrentDay();
+  const upTo = days.filter((d) => d.day <= current);
   const totalFreezes = 2;
   let freezesUsed = 0;
   let streak = 0;
@@ -117,7 +221,7 @@ export function getStudent(): Student {
     if (d.status === "completed") {
       completed++;
       streak++;
-    } else if (d.day === CURRENT_DAY) {
+    } else if (d.day === current) {
       continue; // today isn't missed yet
     } else {
       missed++;
@@ -149,6 +253,7 @@ export function getStudent(): Student {
 
   return {
     ...STUDENT,
+    currentDay: current,
     ...(session
       ? {
           id: `stu_${session.email}`,
@@ -202,11 +307,11 @@ export function isValidUrl(value: string, host: string) {
 
 /** Most recent missed day (<= today), or null when nothing was missed. */
 export function getLatestMissedDay(): number | null {
-  const missed = getDays().filter((d) => d.day <= CURRENT_DAY && d.status === "missed");
+  const missed = getDays().filter((d) => d.day <= getCurrentDay() && d.status === "missed");
   return missed.length ? missed[missed.length - 1]!.day : null;
 }
 
 /** Today's in-progress day (or the most recent day available). */
 export function getLatestDay(): number {
-  return CURRENT_DAY;
+  return getCurrentDay();
 }

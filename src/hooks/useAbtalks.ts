@@ -24,9 +24,12 @@ export function useAbtalks() {
     days: svc.getDays(),
     getDay: svc.getDay,
     getSubmission: svc.getSubmission,
+    isUnlocked: svc.isUnlocked,
+    getDeadline: svc.getDeadline,
     submitProof: svc.submitProof,
     completeProfile: svc.completeProfile,
     dismissNudge: svc.dismissNudge,
     nudgeDismissed: svc.isNudgeDismissed(),
   };
 }
+

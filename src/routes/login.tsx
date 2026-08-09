@@ -1,6 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { signIn } from "@/lib/abtalks/auth";
+import { toast } from "sonner";
+import { HeroBackdrop } from "@/components/hero-backdrop";
+import { useScrollParallax } from "@/hooks/useParallax";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -35,7 +38,8 @@ function LoginPage() {
       .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
       .join(" ");
     signIn({ name, email });
-    navigate({ to: "/dashboard" });
+    toast.success(`Logged in as ${name}`, { duration: 2200 });
+    setTimeout(() => navigate({ to: "/" }), 900);
   }
 
   return (
@@ -82,15 +86,16 @@ export function AuthShell({
   sub: string;
   children: React.ReactNode;
 }) {
-  return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="grid-floor pointer-events-none absolute inset-0 opacity-50" />
-      <div className="pointer-events-none absolute -top-32 left-1/2 size-[420px] -translate-x-1/2">
-        <div className="ember-glow ember-glow-1" />
-        <div className="ember-glow ember-glow-2" />
-      </div>
+  const contentRef = useScrollParallax<HTMLDivElement>(0.06);
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-28">
+  return (
+    <div className="relative min-h-screen bg-background text-foreground">
+      <HeroBackdrop />
+
+      <div
+        ref={contentRef}
+        className="parallax-layer relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-28"
+      >
         <p className="font-mono text-[0.7rem] tracking-[0.28em] text-flame uppercase">{eyebrow}</p>
         <h1 className="font-display mt-3 text-4xl leading-tight font-medium tracking-tight">
           {title}

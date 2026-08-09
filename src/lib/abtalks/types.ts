@@ -1,4 +1,4 @@
-export type DayStatus = "completed" | "in-progress" | "missed" | "upcoming";
+export type DayStatus = "completed" | "in-progress" | "missed" | "upcoming" | "locked";
 
 export interface Student {
   id: string;

@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { signIn } from "@/lib/abtalks/auth";
+import { markFreshAccount } from "@/lib/abtalks/service";
 import { TRACKS } from "@/lib/abtalks/data";
+import { toast } from "sonner";
 import { AuthShell, Field, SubmitButton } from "./login";
 
 export const Route = createFileRoute("/signup")({
@@ -36,6 +38,7 @@ function SignupPage() {
       return;
     }
     const track = TRACKS.find((t) => t.id === trackId)!;
+    markFreshAccount();
     signIn({
       name: name.trim(),
       email: email.trim(),
@@ -43,7 +46,11 @@ function SignupPage() {
       track: track.label,
       trackId: track.id,
     });
-    navigate({ to: "/dashboard" });
+    toast.success("Account created successfully", {
+      description: `Welcome, ${name.trim()} — Day 1 is waiting.`,
+      duration: 2200,
+    });
+    setTimeout(() => navigate({ to: "/" }), 900);
   }
 
   return (

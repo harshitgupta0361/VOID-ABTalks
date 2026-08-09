@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useSession } from "@/hooks/useSession";
 import { useAbtalks } from "@/hooks/useAbtalks";
+import { useScrollParallax } from "@/hooks/useParallax";
+import { HeroBackdrop } from "@/components/hero-backdrop";
 
 
 export const Route = createFileRoute("/")({
@@ -24,98 +26,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const visualRef = useRef<HTMLDivElement | null>(null);
+  const heroCopyRef = useScrollParallax<HTMLDivElement>(0.18);
+  const deckRef = useScrollParallax<HTMLDivElement>(0.09);
+  const statusRef = useScrollParallax<HTMLDivElement>(0.05);
   const session = useSession();
-  const { student, days } = useAbtalks();
+  const { student, days, getSubmission } = useAbtalks();
+  const todaySubmission = getSubmission(student.currentDay);
+  const fresh = student.totalCompleted === 0;
   const missedDays = days.filter((d) => d.day <= student.currentDay && d.status === "missed");
   const lastMissed = missedDays.length ? missedDays[missedDays.length - 1]!.day : null;
   const pct = Math.round((student.totalCompleted / 60) * 100);
 
 
-  // spark particles
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let raf = 0;
-    let w = 0;
-    let h = 0;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    const resize = () => {
-      w = canvas.offsetWidth;
-      h = canvas.offsetHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const sparks = Array.from({ length: 46 }, () => ({
-      x: Math.random() * w,
-      y: Math.random() * h,
-      r: Math.random() * 1.6 + 0.4,
-      vy: -(Math.random() * 0.35 + 0.08),
-      vx: (Math.random() - 0.5) * 0.14,
-      a: Math.random() * 0.6 + 0.15,
-    }));
-
-    const tick = () => {
-      ctx.clearRect(0, 0, w, h);
-      for (const s of sparks) {
-        s.x += s.vx;
-        s.y += s.vy;
-        if (s.y < -10) {
-          s.y = h + 10;
-          s.x = Math.random() * w;
-        }
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(163, 236, 255, ${s.a})`;
-        ctx.fill();
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  // parallax on hero visual
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      const el = visualRef.current;
-      if (!el) return;
-      const dx = (e.clientX / window.innerWidth - 0.5) * 18;
-      const dy = (e.clientY / window.innerHeight - 0.5) * 14;
-      el.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
-    };
-    window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
-  }, []);
-
   return (
     <div>
       <section className="hero">
-        <div className="hero-visual" ref={visualRef} aria-hidden="true">
-          <div className="grid-floor" />
-          <div className="ember-core">
-            <div className="ember-glow ember-glow-1" />
-            <div className="ember-glow ember-glow-2" />
-            <div className="ember-glow ember-glow-3" />
-          </div>
-          <canvas id="sparks" ref={canvasRef} />
-        </div>
+        <HeroBackdrop />
 
-        <div className="hero-content">
+        <div className="hero-content parallax-layer" ref={heroCopyRef}>
           <h1>
             Code every day.
             <br />
@@ -125,7 +53,31 @@ function Landing() {
             A 60-day public build challenge for Indian college students. Ship daily, post daily, get
             noticed by recruiters.
           </p>
+          <div className="hero-story">
+            <p>
+              <strong>ABTalks is where 60 days become your developer identity.</strong> Build
+              something every day, push real code, share your progress, and turn consistency into
+              visible proof of skill. Choose your track, take on daily challenges, complete
+              projects, and document your journey through GitHub and LinkedIn.
+            </p>
+            <p>
+              Track your streak, earn XP, unlock achievements, explore your growth, and climb the
+              leaderboard as your skills evolve. Every completed day adds another layer to your
+              developer portfolio and another step toward becoming industry-ready.
+            </p>
+            <p>
+              No endless tutorials. No passive learning. No waiting for the perfect moment. Just 60
+              days of building, experimenting, shipping, and improving.
+            </p>
+            <p>
+              <strong>
+                Start with one commit. Build your momentum. Make your work visible. Complete the
+                challenge. Become the developer you can prove you are.
+              </strong>
+            </p>
+          </div>
           <div className="cta-row">
+
             <Link to="/dashboard" className="btn btn-primary">
               Start your streak
             </Link>
@@ -136,7 +88,7 @@ function Landing() {
         </div>
       </section>
 
-      <div className="deck">
+      <div className="deck parallax-layer" ref={deckRef}>
         {session ? (
           <>
             <TiltCard {...(lastMissed ? { to: `/day/${lastMissed}` } : { to: "/dashboard" })}>
@@ -157,33 +109,65 @@ function Landing() {
             </TiltCard>
 
             <TiltCard to={`/day/${student.currentDay}`}>
-              <div className="ring">
+              <div className="ring" style={{ ["--ring-pct" as string]: `${pct}%` }}>
                 <span>{pct}%</span>
               </div>
               <p className="card-value">{student.totalCompleted}/60</p>
               <p className="card-label">days shipped</p>
-              <p className="card-sub">day {student.currentDay} in progress</p>
+              <p className="card-sub">
+                {fresh
+                  ? `let's ship day ${student.currentDay}`
+                  : `day ${student.currentDay} in progress`}
+              </p>
               <p className="card-cta">View Day {student.currentDay} →</p>
             </TiltCard>
 
-            <TiltCard>
+            <TiltCard to={`/day/${student.currentDay}`}>
               <svg className="card-icon" viewBox="0 0 24 24">
                 <path d="M9 19c-4 1.5-4-2.5-6-3m12 5v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.7A5.2 5.2 0 0 0 19 3.4a4.8 4.8 0 0 0-.1-3.6s-1.1-.3-3.6 1.4a12.3 12.3 0 0 0-6.6 0C6.2-.5 5.1-.2 5.1-.2A4.8 4.8 0 0 0 5 3.4 5.2 5.2 0 0 0 3.7 7c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-.9 2.6V20" />
               </svg>
               <p className="card-label">GitHub proof</p>
               <p className="card-sub">
-                <span className="badge-ok">✓ submitted</span> · 11:42pm
+                {todaySubmission.githubUrl ? (
+                  <>
+                    <span className="badge-ok">✓ submitted</span> ·{" "}
+                    {formatTime(todaySubmission.githubSubmittedAt)}
+                  </>
+                ) : (
+                  "Not submitted yet"
+                )}
+              </p>
+              <p className="card-cta">
+                {todaySubmission.githubUrl
+                  ? `View Day ${student.currentDay} →`
+                  : `Get started → Day ${student.currentDay}`}
               </p>
             </TiltCard>
 
-            <TiltCard>
+            <TiltCard to={`/day/${student.currentDay}`}>
               <svg className="card-icon" viewBox="0 0 24 24">
                 <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z" />
                 <rect x="2" y="9" width="4" height="12" />
                 <circle cx="4" cy="4" r="2" />
               </svg>
               <p className="card-label">LinkedIn proof</p>
-              <p className="card-sub">auto-draft caption ready</p>
+              <p className="card-sub">
+                {todaySubmission.linkedinUrl ? (
+                  <>
+                    <span className="badge-ok">✓ submitted</span> ·{" "}
+                    {formatTime(todaySubmission.linkedinSubmittedAt)}
+                  </>
+                ) : fresh ? (
+                  "Not submitted yet"
+                ) : (
+                  "auto-draft caption ready"
+                )}
+              </p>
+              <p className="card-cta">
+                {todaySubmission.linkedinUrl
+                  ? `View Day ${student.currentDay} →`
+                  : `Get started → Day ${student.currentDay}`}
+              </p>
             </TiltCard>
           </>
         ) : (
@@ -232,18 +216,23 @@ function Landing() {
       </div>
 
 
-      <div className="status-bar">
+      <div className="status-bar parallax-layer" ref={statusRef}>
         <span className="live-dot" />
-        <span>day 12 of 60</span>
+        <span>day {student.currentDay} of 60</span>
         <span className="dot-sep">·</span>
-        <span>4-day streak</span>
+        <span>{student.currentStreak}-day streak</span>
         <span className="dot-sep">·</span>
-        <span>2 freezes left</span>
+        <span>{student.freezesAvailable} freezes left</span>
         <span className="dot-sep">·</span>
-        <span>#abtalkschallenge</span>
+        <span>#abtalkshackathon ©teamVOID</span>
       </div>
     </div>
   );
+}
+
+function formatTime(iso: string | null) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }).toLowerCase();
 }
 
 function TiltCard({ children, to }: { children: React.ReactNode; to?: string }) {
