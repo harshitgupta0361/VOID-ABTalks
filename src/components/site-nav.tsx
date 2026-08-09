@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Flame, LogOut, Menu, Trash2, User, UserPlus, X } from "lucide-react";
+import { LogOut, Menu, Share2, User, X } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { initials, signOut } from "@/lib/abtalks/auth";
 import { toast } from "sonner";
@@ -77,16 +77,11 @@ export function SiteNav() {
             aria-label="ABTalks home"
             onClick={() => setMenuOpen(false)}
           >
-            <Flame className="logo-flame size-[18px] shrink-0 fill-primary text-primary sm:hidden" />
             <img
               src="/abtalks-wordmark.png"
               alt="ABTalks"
-              className="logo-flame hidden h-[26px] max-h-[40px] w-auto max-w-[150px] shrink-0 bg-transparent object-contain sm:block"
+              className="logo-flame h-[24px] max-h-[44px] w-auto max-w-[130px] shrink-0 bg-transparent object-contain sm:h-[26px] sm:max-w-[150px]"
             />
-
-            <span className="font-mono text-[15px] font-medium tracking-[-0.01em] lowercase sm:hidden">
-              abtalks
-            </span>
           </Link>
 
 
@@ -151,13 +146,24 @@ export function SiteNav() {
                       >
                         <User className="size-4" /> Profile & account
                       </Link>
-                      <Link
-                        to="/signup"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10"
+                      <button
+                        onClick={async () => {
+                          setAccountOpen(false);
+                          const url = `${window.location.origin}/`;
+                          try {
+                            await navigator.clipboard.writeText(url);
+                          } catch {
+                            /* clipboard unavailable */
+                          }
+                          toast.success("Link copied!", {
+                            description: "Share ABTalks with your friends.",
+                            duration: 2200,
+                          });
+                        }}
+                        className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-primary/10"
                       >
-                        <UserPlus className="size-4" /> Add account
-                      </Link>
+                        <Share2 className="size-4" /> Invite friends
+                      </button>
 
                       <button
                         onClick={() => {
@@ -174,13 +180,8 @@ export function SiteNav() {
                       >
                         <LogOut className="size-4" /> Sign out
                       </button>
-                      <Link
-                        to="/profile"
-                        onClick={() => setAccountOpen(false)}
-                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
-                      >
-                        <Trash2 className="size-4" /> Delete account
-                      </Link>
+
+
 
                     </div>
                   </>

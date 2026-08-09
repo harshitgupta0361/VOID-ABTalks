@@ -222,9 +222,8 @@ function Landing() {
 
       <Roadmap />
 
-      <footer className="site-footer parallax-layer" ref={statusRef}>
-        <span>#abtalkshackathon ©teamVOID</span>
-      </footer>
+      <div className="parallax-layer" ref={statusRef} />
+
     </div>
   );
 }

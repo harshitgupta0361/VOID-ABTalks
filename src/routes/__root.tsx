@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SiteNav } from "../components/site-nav";
 import { Toaster } from "../components/ui/sonner";
+import { SiteFooter } from "../components/site-footer";
 
 
 function NotFoundComponent() {
@@ -130,6 +131,7 @@ function RootComponent() {
       <SiteNav />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <SiteFooter />
       <Toaster
         position="top-center"
         toastOptions={{
