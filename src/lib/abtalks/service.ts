@@ -234,8 +234,20 @@ export function getStudent(): Student {
     longest = Math.max(longest, streak);
   }
 
-  const profileComplete =
-    typeof window !== "undefined" && window.localStorage.getItem(PROFILE_KEY) === "true";
+  const sess = getSession();
+  const filled = (v?: string | null) => Boolean(v && v.trim());
+  const profileComplete = Boolean(
+    sess &&
+      filled(sess.name) &&
+      filled(sess.email) &&
+      filled(sess.college) &&
+      filled(sess.track) &&
+      filled(sess.phone) &&
+      filled(sess.github) &&
+      filled(sess.linkedin) &&
+      filled(sess.avatar),
+  );
+
 
   const longestOverall = Math.max(longest, streak);
   const badges = STUDENT.badges.map((b) => ({

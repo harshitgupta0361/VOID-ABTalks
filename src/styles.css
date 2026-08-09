@@ -493,3 +493,121 @@
 @media (prefers-reduced-motion: reduce) {
   .parallax-layer { transform: none !important; opacity: 1 !important; }
 }
+
+/* ── track select (signup) ────────────────────────────────────────── */
+.track-select { position: relative; margin-top: 8px; }
+.track-select-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; height: 48px; padding: 0 14px; border-radius: 12px;
+  border: 1px solid var(--border); background: oklch(0.16 0.02 250 / 55%);
+  backdrop-filter: blur(12px); color: var(--paper); font-size: 15px; text-align: left;
+  transition: border-color .25s ease, box-shadow .25s ease, background-color .25s ease;
+}
+.track-select-trigger:hover { border-color: var(--border-strong); }
+.track-select.is-open .track-select-trigger {
+  border-color: var(--pulse);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--pulse) 18%, transparent),
+    0 0 24px -8px color-mix(in oklab, var(--pulse) 70%, transparent);
+}
+.track-select-chevron { color: var(--paper-dim); transition: transform .25s ease, color .25s ease; }
+.track-select.is-open .track-select-chevron { transform: rotate(180deg); color: var(--pulse); }
+.track-select-panel {
+  position: absolute; z-index: 40; inset-inline: 0; top: calc(100% + 8px);
+  border-radius: 14px; border: 1px solid color-mix(in oklab, var(--pulse) 45%, transparent);
+  background: oklch(0.14 0.02 250 / 88%); backdrop-filter: blur(18px);
+  box-shadow: 0 0 30px -12px color-mix(in oklab, var(--pulse) 70%, transparent),
+    0 26px 50px -30px oklch(0 0 0 / 85%);
+  overflow: hidden; padding: 6px;
+  opacity: 0; transform: translateY(-6px) scaleY(.96); transform-origin: top;
+  max-height: 0; pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease, max-height .28s ease;
+}
+.track-select.is-open .track-select-panel {
+  opacity: 1; transform: translateY(0) scaleY(1); max-height: 360px; pointer-events: auto;
+}
+.track-option {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  width: 100%; padding: 10px 12px; border-radius: 10px; text-align: left;
+  color: var(--paper); transition: background-color .18s ease, color .18s ease;
+}
+.track-option:hover { background: color-mix(in oklab, var(--pulse) 12%, transparent); }
+.track-option.is-selected { color: var(--pulse); }
+.track-option-label { display: block; font-size: 14px; font-weight: 500; }
+.track-option-blurb { display: block; margin-top: 2px; font-size: 12px; color: var(--paper-dim); }
+.track-help { margin-top: 10px; font-size: 12.5px; line-height: 1.7; color: var(--paper-dim); }
+
+/* ── roadmap (horizontal) ─────────────────────────────────────────── */
+.roadmap { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 40px clamp(20px,4vw,48px) 100px; }
+.roadmap-eyebrow, .focus-eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .26em; text-transform: uppercase; color: var(--pulse); }
+.roadmap-title { font-family: var(--font-display); font-weight: 500; font-size: clamp(1.7rem, 3.4vw, 2.5rem); margin-top: 10px; }
+.roadmap-sub { margin-top: 10px; max-width: 52ch; font-size: .95rem; line-height: 1.75; color: var(--paper-dim); }
+.roadmap-rail { position: relative; margin-top: 34px; }
+.roadmap-line { position: absolute; left: 0; right: 0; top: 58px; height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--pulse) 70%, transparent), transparent);
+  box-shadow: 0 0 16px color-mix(in oklab, var(--pulse) 45%, transparent); pointer-events: none; }
+.roadmap-track { display: flex; gap: 18px; overflow-x: auto; padding: 6px 2px 24px; scroll-snap-type: x mandatory; perspective: 1200px; scrollbar-width: thin; }
+.roadmap-card { flex: 0 0 clamp(240px, 26vw, 290px); scroll-snap-align: start; list-style: none; }
+.roadmap-card-inner {
+  position: relative; height: 100%; padding: 22px 20px; border-radius: 16px;
+  border: 1px solid var(--border); background: oklch(0.15 0.015 250 / 70%); backdrop-filter: blur(14px);
+  transform-style: preserve-3d; transition: transform .3s cubic-bezier(.4,0,.2,1), border-color .3s ease, box-shadow .3s ease;
+  box-shadow: 0 26px 50px -30px oklch(0 0 0 / 75%);
+}
+.roadmap-card:hover .roadmap-card-inner {
+  transform: translateY(-6px) rotateX(6deg) rotateY(-5deg);
+  border-color: var(--pulse);
+  box-shadow: 0 30px 60px -28px color-mix(in oklab, var(--pulse) 45%, transparent);
+}
+.roadmap-num { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+  font-family: var(--font-mono); font-size: 12px; color: var(--pulse);
+  border: 1px solid color-mix(in oklab, var(--pulse) 55%, transparent);
+  background: oklch(0.12 0.02 250 / 90%);
+  box-shadow: 0 0 18px -6px color-mix(in oklab, var(--pulse) 80%, transparent); }
+.roadmap-label { margin-top: 16px; font-size: 15px; font-weight: 500; color: var(--paper); }
+.roadmap-desc { margin-top: 8px; font-size: 12.8px; line-height: 1.7; color: var(--paper-dim); }
+
+/* ── focus-lock track section ─────────────────────────────────────── */
+.focus-lock { position: relative; z-index: 1; height: 480vh; }
+.focus-sticky { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+.focus-inner { max-width: 1180px; width: 100%; margin: 0 auto; padding: 0 clamp(20px,4vw,48px);
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; }
+.focus-title { font-family: var(--font-display); font-weight: 500; font-size: clamp(2rem, 4.6vw, 3.2rem); margin-top: 12px;
+  color: var(--track-accent); animation: focusIn .5s ease both; }
+.focus-desc { margin-top: 14px; max-width: 44ch; font-size: .98rem; line-height: 1.8; color: var(--paper-dim); animation: focusIn .55s ease both; }
+.focus-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.focus-stat { padding: 8px 14px; border-radius: 999px; font-family: var(--font-mono); font-size: 11.5px; color: var(--paper);
+  border: 1px solid color-mix(in oklab, var(--track-accent) 45%, transparent);
+  background: oklch(0.15 0.015 250 / 65%); backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px -10px var(--track-accent); }
+@keyframes focusIn { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } to { opacity: 1; transform: none; filter: blur(0); } }
+.focus-core-wrap { display: grid; place-items: center; perspective: 1000px; }
+.focus-core { position: relative; width: min(340px, 62vw); aspect-ratio: 1; transform-style: preserve-3d;
+  transform: rotateX(64deg) rotateZ(var(--spin, 0deg)); transition: transform .12s linear; }
+.focus-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--track-accent) 60%, transparent);
+  box-shadow: 0 0 40px -10px var(--track-accent); transition: border-color .6s ease, box-shadow .6s ease; }
+.focus-ring.r2 { inset: 16%; transform: rotateX(52deg); }
+.focus-ring.r3 { inset: 32%; transform: rotateY(58deg); }
+.focus-core-orb { position: absolute; inset: 40%; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in oklab, var(--track-accent) 90%, white), var(--track-accent) 60%, transparent 78%);
+  filter: blur(1px); box-shadow: 0 0 70px 10px color-mix(in oklab, var(--track-accent) 45%, transparent);
+  transition: background .6s ease, box-shadow .6s ease; animation: orbFloat 6s ease-in-out infinite; }
+@keyframes orbFloat { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.focus-dots { display: flex; justify-content: center; gap: 8px; padding: 26px 0 34px; }
+.focus-dot { width: 26px; height: 3px; border-radius: 999px; background: var(--border-strong); transition: background .4s ease, box-shadow .4s ease; }
+.focus-dot.is-on { background: var(--track-accent); box-shadow: 0 0 12px var(--track-accent); }
+
+@media (max-width: 860px) {
+  .focus-inner { grid-template-columns: 1fr; gap: 24px; text-align: left; }
+  .focus-core-wrap { order: -1; }
+  .focus-core { width: min(220px, 55vw); }
+  .focus-lock { height: 420vh; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .focus-core, .focus-core-orb { animation: none; transition: none; }
+  .focus-title, .focus-desc { animation: none; }
+}
+
+/* ── footer ───────────────────────────────────────────────────────── */
+.site-footer { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto;
+  padding: 26px clamp(20px,4vw,48px) 44px; border-top: 1px solid var(--border);
+  font-family: var(--font-mono); font-size: 12.5px; color: var(--paper-dim); text-align: center; }

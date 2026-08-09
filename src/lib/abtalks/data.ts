@@ -2,33 +2,57 @@ import type { Badge, ChallengeDay, DayStatus, Student } from "./types";
 
 export const TRACKS = [
   {
-    id: "fullstack",
-    label: "Full Stack Web Dev",
-    blurb: "HTML to deployed APIs in 60 days.",
+    id: "web",
+    label: "Web Development",
+    blurb: "HTML to deployed full-stack apps in 60 days.",
     day1: "Build a personal profile page with semantic HTML + Flexbox.",
+    accent: "oklch(0.78 0.14 195)",
+    highlights: ["60 shipped projects", "Frontend → backend → deploy"],
   },
   {
     id: "dsa",
     label: "DSA",
     blurb: "Patterns, not memorisation.",
     day1: "Solve 3 array problems and explain your approach in comments.",
+    accent: "oklch(0.78 0.15 145)",
+    highlights: ["Data Structures & Algorithms", "300+ problems solved"],
   },
   {
     id: "ml",
     label: "Machine Learning",
     blurb: "From pandas to a deployed model.",
     day1: "Load a CSV with pandas and write 5 insights about it.",
+    accent: "oklch(0.78 0.15 60)",
+    highlights: ["Real ML models", "End-to-end pipelines"],
   },
   {
     id: "appdev",
-    label: "Mobile / App Dev",
+    label: "App Development",
     blurb: "Ship a real app to a real phone.",
     day1: "Set up React Native and render your first custom screen.",
+    accent: "oklch(0.75 0.16 300)",
+    highlights: ["Android + iOS builds", "Store-ready release"],
+  },
+  {
+    id: "hacking",
+    label: "Ethical Hacking",
+    blurb: "Break it legally, then write the report.",
+    day1: "Set up a lab VM and run your first authorised port scan.",
+    accent: "oklch(0.72 0.17 25)",
+    highlights: ["Lab-based recon to reporting", "OWASP Top 10 hands-on"],
+  },
+  {
+    id: "nlp",
+    label: "NLP",
+    blurb: "Teach machines to read, write and answer.",
+    day1: "Tokenise a text corpus and chart the word frequency curve.",
+    accent: "oklch(0.76 0.14 250)",
+    highlights: ["Transformers & embeddings", "Your own RAG assistant"],
   },
 ] as const;
 
 const TITLES: Record<string, string[]> = {
-  fullstack: [
+  web: [
     "Semantic HTML Profile Page",
     "Flexbox Layout Drills",
     "CSS Grid Dashboard Shell",
@@ -42,9 +66,9 @@ const TITLES: Record<string, string[]> = {
     "React State & Props",
     "Build a REST API with Express",
     "Express Middleware Deep Dive",
-    "MongoDB CRUD Endpoints",
+    "Postgres CRUD Endpoints",
     "JWT Auth Flow",
-    "React Router Multi-Page App",
+    "Client-Side Routing",
     "Data Fetching with React Query",
     "Tailwind Design System",
     "File Uploads & Storage",
@@ -87,7 +111,7 @@ const TITLES: Record<string, string[]> = {
     "Gradient Boosting Basics",
     "Unsupervised: K-Means",
     "Dimensionality Reduction with PCA",
-    "NLP: Bag of Words & TF-IDF",
+    "Feature Engineering Workshop",
     "Intro to Neural Networks",
     "Training a CNN on Images",
     "Transfer Learning",
@@ -116,7 +140,54 @@ const TITLES: Record<string, string[]> = {
     "Performance Profiling",
     "Ship to TestFlight / Play Console",
   ],
+  hacking: [
+    "Build Your Legal Lab (VMs & Snapshots)",
+    "Linux Command Line for Recon",
+    "Networking Refresher: Ports & Protocols",
+    "Passive Recon & OSINT",
+    "Nmap Scanning Fundamentals",
+    "Service Enumeration",
+    "Vulnerability Scanning Basics",
+    "Web Recon: Directories & Params",
+    "OWASP Top 10 Tour",
+    "SQL Injection in a Sandbox",
+    "Cross-Site Scripting (XSS)",
+    "Broken Authentication & Sessions",
+    "Burp Suite Proxy Workflow",
+    "File Upload & Path Traversal",
+    "Password Cracking & Hashing",
+    "Privilege Escalation on Linux",
+    "Wireless & Network Sniffing",
+    "Social Engineering Awareness",
+    "Writing a Professional Pentest Report",
+    "Full Lab Engagement End-to-End",
+  ],
+  nlp: [
+    "Tokenisation & Text Cleaning",
+    "Word Frequencies & Zipf's Law",
+    "Regex for Text Extraction",
+    "Stemming, Lemmatisation & Stopwords",
+    "Bag of Words & TF-IDF",
+    "Text Classification Baseline",
+    "Naive Bayes Sentiment Model",
+    "Word Embeddings with Word2Vec",
+    "Sentence Embeddings & Similarity",
+    "Named Entity Recognition",
+    "POS Tagging & Dependency Parsing",
+    "Topic Modelling with LDA",
+    "Sequence Models: RNN & LSTM",
+    "Attention, Explained by Building It",
+    "Transformers with Hugging Face",
+    "Fine-Tuning a Small Language Model",
+    "Summarisation & Translation Tasks",
+    "Prompting & Evaluation Harness",
+    "Vector Search & RAG Pipeline",
+    "Deploy Your NLP Service",
+  ],
 };
+
+/** Legacy ids stored in older sessions. */
+const TRACK_ALIASES: Record<string, string> = { fullstack: "web" };
 
 const PHASES = ["Foundations", "Applied", "Advanced"] as const;
 
@@ -135,7 +206,7 @@ const TIMES = ["45 min", "1 hr", "1.5 hrs", "2 hrs"];
 const DIFFS = ["Easy", "Medium", "Hard"] as const;
 
 const RESOURCES: Record<string, { label: string; url: string }[]> = {
-  fullstack: [
+  web: [
     { label: "MDN Web Docs", url: "https://developer.mozilla.org" },
     { label: "Full Stack roadmap", url: "https://roadmap.sh/full-stack" },
     { label: "Reference repo", url: "https://github.com" },
@@ -155,6 +226,26 @@ const RESOURCES: Record<string, { label: string; url: string }[]> = {
     { label: "Android roadmap", url: "https://roadmap.sh/android" },
     { label: "Reference repo", url: "https://github.com" },
   ],
+  hacking: [
+    { label: "OWASP Top 10", url: "https://owasp.org/www-project-top-ten/" },
+    { label: "Cyber security roadmap", url: "https://roadmap.sh/cyber-security" },
+    { label: "TryHackMe labs", url: "https://tryhackme.com" },
+  ],
+  nlp: [
+    { label: "Hugging Face course", url: "https://huggingface.co/learn" },
+    { label: "spaCy docs", url: "https://spacy.io" },
+    { label: "AI/ML roadmap", url: "https://roadmap.sh/ai-data-scientist" },
+  ],
+};
+
+/** Track-specific flavour for the generated brief. */
+const VERBS: Record<string, string> = {
+  web: "build and deploy",
+  dsa: "solve and explain",
+  ml: "train and evaluate",
+  appdev: "build and run on a device",
+  hacking: "test in your lab and document",
+  nlp: "build and evaluate",
 };
 
 export const CURRENT_DAY = 12;
@@ -167,13 +258,19 @@ function statusFor(day: number): DayStatus {
   return "completed";
 }
 
-export const DEFAULT_TRACK_ID = "fullstack";
+export const DEFAULT_TRACK_ID = "web";
 
 const cache = new Map<string, ChallengeDay[]>();
 
+export function resolveTrackId(raw?: string) {
+  if (!raw) return DEFAULT_TRACK_ID;
+  const mapped = TRACK_ALIASES[raw] ?? raw;
+  return TITLES[mapped] ? mapped : DEFAULT_TRACK_ID;
+}
+
 /** 60 mock days generated for one specific track. */
 export function buildDaysForTrack(trackIdRaw?: string): ChallengeDay[] {
-  const trackId = trackIdRaw && TITLES[trackIdRaw] ? trackIdRaw : DEFAULT_TRACK_ID;
+  const trackId = resolveTrackId(trackIdRaw);
   const cached = cache.get(trackId);
   if (cached) return cached;
 
@@ -190,8 +287,8 @@ export function buildDaysForTrack(trackIdRaw?: string): ChallengeDay[] {
       title,
       trackId,
       trackLabel: track.label,
-      shortTask: `Build and push: ${base.toLowerCase()}. Keep it small, keep it shipped.`,
-      detailedTask: `Today you will work through "${title}" end to end as part of the ${track.label} track. Start by scoping the smallest version that still works, then build it in one sitting. Commit at least three times with meaningful messages so your progress is readable. When it runs, write two lines in your README about what broke and how you fixed it — that becomes your LinkedIn post. Do not chase perfection; chase a working artifact you can link to.`,
+      shortTask: `${VERBS[trackId]}: ${base.toLowerCase()}. Keep it small, keep it shipped.`,
+      detailedTask: `Today you will work through "${title}" end to end as part of the ${track.label} track. Start by scoping the smallest version that still works, then ${VERBS[trackId]} it in one sitting. Commit at least three times with meaningful messages so your progress is readable. When it runs, write two lines in your README about what broke and how you fixed it — that becomes your LinkedIn post. Do not chase perfection; chase a working artifact you can link to.`,
       learningGoal: GOALS[i % GOALS.length]!,
       estimatedTime: TIMES[i % TIMES.length]!,
       difficulty: DIFFS[i % 3]!,
@@ -255,8 +352,8 @@ export const STUDENT: Student = {
   id: "stu_2291",
   name: "Ananya Bhatt",
   college: "VIT Vellore",
-  track: "Full Stack Web Dev",
-  trackId: "fullstack",
+  track: "Web Development",
+  trackId: "web",
   startDate: "2026-07-27",
   currentDay: CURRENT_DAY,
   currentStreak: 6,

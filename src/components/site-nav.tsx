@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Flame, LogOut, Menu, User, X } from "lucide-react";
+import { Flame, LogOut, Menu, Trash2, User, UserPlus, X } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { initials, signOut } from "@/lib/abtalks/auth";
 import { toast } from "sonner";
@@ -73,15 +73,15 @@ export function SiteNav() {
         <nav className="relative mx-auto flex h-[68px] max-w-[1180px] items-center gap-3 px-5 sm:px-8">
           <Link
             to="/"
-            className="logo-mark flex items-center gap-2"
+            className="logo-mark flex min-w-0 shrink-0 items-center gap-2"
             aria-label="ABTalks home"
             onClick={() => setMenuOpen(false)}
           >
-            <Flame className="logo-flame size-[18px] fill-primary text-primary sm:hidden" />
+            <Flame className="logo-flame size-[18px] shrink-0 fill-primary text-primary sm:hidden" />
             <img
               src="/abtalks-wordmark.png"
               alt="ABTalks"
-              className="logo-flame hidden h-[26px] w-auto bg-transparent object-contain sm:block"
+              className="logo-flame hidden h-[26px] max-h-[40px] w-auto max-w-[150px] shrink-0 bg-transparent object-contain sm:block"
             />
 
             <span className="font-mono text-[15px] font-medium tracking-[-0.01em] lowercase sm:hidden">
@@ -95,13 +95,14 @@ export function SiteNav() {
               <Link
                 key={l.to}
                 to={l.to}
-                activeProps={{ className: "text-foreground" }}
-                className="nav-link rounded-full px-3 py-2 text-[13px] text-muted-foreground transition-colors hover:text-primary"
+                activeProps={{ className: "text-white" }}
+                className="nav-link rounded-full px-3 py-2 text-[13px] text-white transition-colors hover:text-primary"
               >
                 {l.label}
               </Link>
             ))}
           </div>
+
 
           <div className="ml-auto flex items-center gap-2">
             {session ? (
@@ -151,12 +152,13 @@ export function SiteNav() {
                         <User className="size-4" /> Profile & account
                       </Link>
                       <Link
-                        to="/dashboard"
+                        to="/signup"
                         onClick={() => setAccountOpen(false)}
                         className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-foreground transition-colors hover:bg-primary/10"
                       >
-                        <Flame className="size-4" /> Dashboard
+                        <UserPlus className="size-4" /> Add account
                       </Link>
+
                       <button
                         onClick={() => {
                           setAccountOpen(false);
@@ -172,6 +174,14 @@ export function SiteNav() {
                       >
                         <LogOut className="size-4" /> Sign out
                       </button>
+                      <Link
+                        to="/profile"
+                        onClick={() => setAccountOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
+                      >
+                        <Trash2 className="size-4" /> Delete account
+                      </Link>
+
                     </div>
                   </>
                 )}
@@ -180,16 +190,17 @@ export function SiteNav() {
               <>
                 <Link
                   to="/login"
-                  className="hidden h-10 items-center rounded-full border border-input px-4 text-[13.5px] font-medium text-foreground transition-colors hover:border-primary hover:bg-primary/10 sm:inline-flex"
+                  className="nav-link hidden h-10 items-center rounded-full border border-input px-4 text-[13.5px] font-medium text-white transition-colors hover:border-primary hover:bg-primary/10 sm:inline-flex"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="inline-flex h-10 items-center rounded-full bg-primary px-4 text-[13.5px] font-medium text-primary-foreground transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-flame)]"
+                  className="nav-link inline-flex h-10 items-center rounded-full bg-primary px-4 text-[13.5px] font-medium text-white transition-[transform,box-shadow] hover:-translate-y-0.5 hover:shadow-[var(--shadow-flame)]"
                 >
                   Sign Up
                 </Link>
+
               </>
             )}
 
@@ -215,8 +226,8 @@ export function SiteNav() {
                   key={l.to}
                   to={l.to}
                   onClick={() => setMenuOpen(false)}
-                  activeProps={{ className: "text-foreground" }}
-                  className="nav-link px-1 py-3 text-[14px] text-muted-foreground transition-colors hover:text-primary"
+                  activeProps={{ className: "text-white" }}
+                  className="nav-link px-1 py-3 text-[14px] text-white transition-colors hover:text-primary"
                 >
                   {l.label}
                 </Link>
@@ -225,11 +236,12 @@ export function SiteNav() {
                 <Link
                   to="/login"
                   onClick={() => setMenuOpen(false)}
-                  className="font-mono px-1 py-3 text-[14px] text-muted-foreground transition-colors hover:text-primary sm:hidden"
+                  className="font-mono px-1 py-3 text-[14px] text-white transition-colors hover:text-primary sm:hidden"
                 >
-                  login
+                  Login
                 </Link>
               )}
+
             </div>
           </div>
         )}

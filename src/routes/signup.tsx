@@ -3,6 +3,7 @@ import { useState } from "react";
 import { signIn } from "@/lib/abtalks/auth";
 import { markFreshAccount } from "@/lib/abtalks/service";
 import { TRACKS } from "@/lib/abtalks/data";
+import { TrackSelect } from "@/components/track-select";
 import { toast } from "sonner";
 import { AuthShell, Field, SubmitButton } from "./login";
 
@@ -63,22 +64,8 @@ function SignupPage() {
         <Field label="Full name" value={name} onChange={setName} placeholder="Aisha Verma" />
         <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@college.edu" />
         <Field label="College" value={college} onChange={setCollege} placeholder="NIT Trichy" />
-        <label className="block">
-          <span className="font-mono text-[0.65rem] tracking-[0.18em] text-muted-foreground uppercase">
-            Track
-          </span>
-          <select
-            value={trackId}
-            onChange={(e) => setTrackId(e.target.value)}
-            className="mt-2 h-12 w-full rounded-xl border border-border bg-background/60 px-3 text-base outline-none transition-colors focus:border-flame focus:ring-2 focus:ring-flame/25"
-          >
-            {TRACKS.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <TrackSelect value={trackId} onChange={setTrackId} />
+
         <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="At least 6 characters" />
         {error && <p className="font-mono text-xs text-destructive">{error}</p>}
         <SubmitButton>Create account</SubmitButton>

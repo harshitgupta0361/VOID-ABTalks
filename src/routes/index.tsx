@@ -4,6 +4,8 @@ import { useSession } from "@/hooks/useSession";
 import { useAbtalks } from "@/hooks/useAbtalks";
 import { useScrollParallax } from "@/hooks/useParallax";
 import { HeroBackdrop } from "@/components/hero-backdrop";
+import { TrackFocus } from "@/components/track-focus";
+import { Roadmap } from "@/components/roadmap";
 
 
 export const Route = createFileRoute("/")({
@@ -216,19 +218,17 @@ function Landing() {
       </div>
 
 
-      <div className="status-bar parallax-layer" ref={statusRef}>
-        <span className="live-dot" />
-        <span>day {student.currentDay} of 60</span>
-        <span className="dot-sep">·</span>
-        <span>{student.currentStreak}-day streak</span>
-        <span className="dot-sep">·</span>
-        <span>{student.freezesAvailable} freezes left</span>
-        <span className="dot-sep">·</span>
+      <TrackFocus />
+
+      <Roadmap />
+
+      <footer className="site-footer parallax-layer" ref={statusRef}>
         <span>#abtalkshackathon ©teamVOID</span>
-      </div>
+      </footer>
     </div>
   );
 }
+
 
 function formatTime(iso: string | null) {
   if (!iso) return "";

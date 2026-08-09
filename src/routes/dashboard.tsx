@@ -112,14 +112,14 @@ function Dashboard() {
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold">Complete your profile</p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Add your graduation year and skills so recruiters can find you.
+                Add your phone, GitHub, LinkedIn and a profile picture so recruiters can find you.
               </p>
-              <button
-                onClick={completeProfile}
-                className="mt-3 h-11 rounded-xl bg-flame px-4 text-sm font-bold text-primary-foreground active:scale-95"
+              <Link
+                to="/profile"
+                className="mt-3 inline-flex h-11 items-center rounded-xl bg-flame px-4 text-sm font-bold text-primary-foreground active:scale-95"
               >
                 Complete now
-              </button>
+              </Link>
             </div>
             <button
               aria-label="Dismiss"
@@ -130,6 +130,7 @@ function Dashboard() {
             </button>
           </div>
         )}
+
 
         {/* Streak card */}
         <div className="scene mt-4">
