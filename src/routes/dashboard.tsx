@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { Flame, Snowflake, Info, X, Lock, Sparkles, ArrowRight, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Flame, Snowflake, Info, X, Lock, Sparkles, ArrowRight, CheckCircle2, Award } from "lucide-react";
 import { useAbtalks } from "@/hooks/useAbtalks";
 import { useSession } from "@/hooks/useSession";
 
@@ -24,6 +25,7 @@ function Dashboard() {
     useAbtalks();
   const session = useSession();
   const navigate = useNavigate();
+  const [badgesOpen, setBadgesOpen] = useState(false);
 
   useEffect(() => {
     if (ready && !session) navigate({ to: "/login" });
@@ -45,11 +47,19 @@ function Dashboard() {
     <div className="min-h-screen bg-background pb-16 text-foreground">
       <div className="mx-auto max-w-2xl px-4 pt-6">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-flame text-base font-black text-primary-foreground">
-            {initials}
-          </div>
-          <div className="min-w-0">
+        <div className="flex items-start gap-3">
+          {session.avatar ? (
+            <img
+              src={session.avatar}
+              alt=""
+              className="size-12 shrink-0 rounded-2xl object-cover"
+            />
+          ) : (
+            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-flame text-base font-black text-primary-foreground">
+              {initials}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
             <p className="truncate text-lg font-black">{student.name}</p>
             <p className="truncate text-xs text-muted-foreground">
               {student.college} · {student.track}
@@ -57,10 +67,32 @@ function Dashboard() {
             <p className="truncate font-mono text-[0.65rem] text-muted-foreground/80">
               {session.email}
             </p>
+
+            {/* Achievements beside the name */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              {student.badges.map((b) => (
+                <span
+                  key={b.id}
+                  title={b.earned ? `${b.label} — ${b.description}` : `Locked · ${b.description}`}
+                  aria-label={b.label}
+                  className={`grid size-7 place-items-center rounded-lg ${
+                    b.earned ? "bg-flame/15 text-flame" : "bg-muted text-muted-foreground opacity-60"
+                  }`}
+                >
+                  {b.earned ? <Sparkles className="size-3.5" /> : <Lock className="size-3" />}
+                </span>
+              ))}
+              <button
+                onClick={() => setBadgesOpen(true)}
+                className="inline-flex h-7 items-center gap-1.5 rounded-lg border border-border px-2.5 text-[0.7rem] font-bold text-muted-foreground transition-colors hover:border-flame hover:text-foreground"
+              >
+                <Award className="size-3.5" /> Your Badges
+              </button>
+            </div>
           </div>
 
-          <Link to="/" className="ml-auto text-xs font-semibold text-muted-foreground">
-            Home
+          <Link to="/profile" className="text-xs font-semibold text-muted-foreground">
+            Profile
           </Link>
         </div>
 
@@ -204,31 +236,6 @@ function Dashboard() {
           <Stat label="Completion" value={`${rate}%`} />
         </div>
 
-        {/* Achievements */}
-        <div className="mt-4 rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm font-black">Achievements</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {student.badges.map((b) => (
-              <span
-                key={b.id}
-                className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold ${
-                  b.earned
-                    ? "bg-flame/15 text-flame"
-                    : "bg-muted text-muted-foreground opacity-60"
-                }`}
-              >
-                {b.earned ? <Sparkles className="size-3.5" /> : <Lock className="size-3.5" />}
-                {b.label}
-              </span>
-            ))}
-          </div>
-          {!student.badges.some((b) => b.earned) && (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Earn your first badge — submit Day 1.
-            </p>
-          )}
-        </div>
-
         {/* Mini timeline */}
         <div className="mt-4 rounded-2xl border border-border bg-card p-5">
           <p className="text-sm font-black">60-day timeline</p>
@@ -255,6 +262,67 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {badgesOpen && (
+        <div
+          className="fixed inset-0 z-50 grid place-items-end bg-background/70 backdrop-blur-sm sm:place-items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Your badges"
+          onClick={() => setBadgesOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[80vh] w-full overflow-y-auto rounded-t-3xl border border-border bg-card p-5 sm:max-w-md sm:rounded-3xl"
+          >
+            <div className="flex items-center justify-between">
+              <p className="font-display text-xl font-medium">Your badges</p>
+              <button
+                aria-label="Close"
+                onClick={() => setBadgesOpen(false)}
+                className="grid size-10 place-items-center rounded-xl text-muted-foreground"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+
+            {student.badges.some((b) => b.earned) ? (
+              <ul className="mt-4 space-y-2">
+                {student.badges
+                  .filter((b) => b.earned)
+                  .map((b) => (
+                    <li
+                      key={b.id}
+                      className="flex items-start gap-3 rounded-2xl border border-border p-3.5"
+                    >
+                      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-flame/15 text-flame">
+                        <Sparkles className="size-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-black">{b.label}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          {b.description}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
+            ) : (
+              <div className="mt-4 rounded-2xl border border-border p-5 text-center">
+                <Lock className="mx-auto size-5 text-muted-foreground" />
+                <p className="mt-3 text-sm font-bold">No badges yet</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Earn your first badge — submit Day 1.
+                </p>
+              </div>
+            )}
+
+            <p className="mt-4 font-mono text-[0.65rem] tracking-[0.14em] text-muted-foreground uppercase">
+              {student.badges.filter((b) => b.earned).length} of {student.badges.length} unlocked
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

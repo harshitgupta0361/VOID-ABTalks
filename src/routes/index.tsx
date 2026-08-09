@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { useSession } from "@/hooks/useSession";
+import { useAbtalks } from "@/hooks/useAbtalks";
 
 
 export const Route = createFileRoute("/")({
@@ -26,6 +27,10 @@ function Landing() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const visualRef = useRef<HTMLDivElement | null>(null);
   const session = useSession();
+  const { student, days } = useAbtalks();
+  const missedDays = days.filter((d) => d.day <= student.currentDay && d.status === "missed");
+  const lastMissed = missedDays.length ? missedDays[missedDays.length - 1]!.day : null;
+  const pct = Math.round((student.totalCompleted / 60) * 100);
 
 
   // spark particles
@@ -134,23 +139,31 @@ function Landing() {
       <div className="deck">
         {session ? (
           <>
-            <TiltCard to="/day/4">
-              <svg className="card-icon filled" viewBox="0 0 24 24">
-                <path d="M12 2c1.5 4 5 5.5 5 9.5A5 5 0 0 1 7 12c0-2 1-3 1-3s.5 1.5 2 2c0-3 2-6 2-9Z" />
+            <TiltCard {...(lastMissed ? { to: `/day/${lastMissed}` } : { to: "/dashboard" })}>
+              <svg className="card-icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
               </svg>
-              <p className="card-value">4</p>
-              <p className="card-label">day streak</p>
-              <p className="card-sub">2 freezes left</p>
-              <p className="card-cta">View Day 4 →</p>
+              <p className="card-value">{missedDays.length}</p>
+              <p className="card-label">days missed</p>
+              <p className="card-sub">
+                {lastMissed
+                  ? `${student.freezesAvailable} freeze${student.freezesAvailable === 1 ? "" : "s"} left`
+                  : "0 missed — keep it up"}
+              </p>
+              <p className="card-cta">
+                {lastMissed ? `View Day ${lastMissed} →` : "Go to dashboard →"}
+              </p>
             </TiltCard>
 
-            <TiltCard>
+            <TiltCard to={`/day/${student.currentDay}`}>
               <div className="ring">
-                <span>20%</span>
+                <span>{pct}%</span>
               </div>
-              <p className="card-value">12/60</p>
+              <p className="card-value">{student.totalCompleted}/60</p>
               <p className="card-label">days shipped</p>
-              <p className="card-sub">day 12 in progress</p>
+              <p className="card-sub">day {student.currentDay} in progress</p>
+              <p className="card-cta">View Day {student.currentDay} →</p>
             </TiltCard>
 
             <TiltCard>
