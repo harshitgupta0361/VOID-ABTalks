@@ -563,7 +563,8 @@
 .roadmap-pulse { position: absolute; top: 50%; width: 10px; height: 10px; border-radius: 50%; translate: -50% -50%;
   background: var(--pulse); box-shadow: 0 0 22px 3px color-mix(in oklab, var(--pulse) 75%, transparent);
   transition: left .45s cubic-bezier(.4,0,.2,1); pointer-events: none; }
-.roadmap-track { display: flex; align-items: center; gap: 14px; overflow-x: auto; padding: 46px 4px; perspective: 1200px; scrollbar-width: thin; }
+.roadmap-track { display: flex; align-items: center; gap: 14px; overflow-x: auto; padding: 46px 4px; perspective: 1200px; scrollbar-width: none; -ms-overflow-style: none; }
+.roadmap-track::-webkit-scrollbar { display: none; }
 .roadmap-card { flex: 0 0 clamp(210px, 22vw, 250px); list-style: none;
   transition: transform .45s cubic-bezier(.4,0,.2,1), opacity .45s ease; }
 .roadmap-card.is-past, .roadmap-card.is-next { transform: scale(.9); opacity: .5; }
