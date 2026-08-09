@@ -55,29 +55,7 @@ function Landing() {
             A 60-day public build challenge for Indian college students. Ship daily, post daily, get
             noticed by recruiters.
           </p>
-          <div className="hero-story">
-            <p>
-              <strong>ABTalks is where 60 days become your developer identity.</strong> Build
-              something every day, push real code, share your progress, and turn consistency into
-              visible proof of skill. Choose your track, take on daily challenges, complete
-              projects, and document your journey through GitHub and LinkedIn.
-            </p>
-            <p>
-              Track your streak, earn XP, unlock achievements, explore your growth, and climb the
-              leaderboard as your skills evolve. Every completed day adds another layer to your
-              developer portfolio and another step toward becoming industry-ready.
-            </p>
-            <p>
-              No endless tutorials. No passive learning. No waiting for the perfect moment. Just 60
-              days of building, experimenting, shipping, and improving.
-            </p>
-            <p>
-              <strong>
-                Start with one commit. Build your momentum. Make your work visible. Complete the
-                challenge. Become the developer you can prove you are.
-              </strong>
-            </p>
-          </div>
+
           <div className="cta-row">
 
             <Link to="/dashboard" className="btn btn-primary">
@@ -217,6 +195,55 @@ function Landing() {
         )}
       </div>
 
+
+      {/* Story text — flex-centered in the gap between deck and track section */}
+      <div className="story-gap-wrapper">
+      <div className="relative z-[1] w-full px-[clamp(20px,4vw,48px)]">
+        <div className="story-block">
+          {/* Invisible float — creates concave right edge that curves around the hero glow.
+              shape-outside pushes text away from the glow area on desktop; hidden on mobile. */}
+          <div className="story-glow-float" aria-hidden="true" />
+
+          {/* Bold statement line — 'ABTalks' and '60 days' in cyan, rest bold white */}
+          <p className="text-2xl font-bold leading-snug text-white">
+            <span className="text-cyan-400">ABTalks</span> is where{" "}
+            <span className="text-cyan-400">60 days</span> become your developer identity.
+          </p>
+
+          {/* Supporting body text */}
+          <p className="mt-7 text-base leading-relaxed text-muted-foreground">
+            Build something every day, push real code, share your progress, and turn consistency
+            into visible proof of skill. Choose your track, take on daily challenges, complete
+            projects, and document your journey through GitHub and LinkedIn.
+          </p>
+
+          {/* Keyword-highlighted paragraph */}
+          <p className="mt-7 text-base leading-relaxed text-muted-foreground">
+            Track your{" "}
+            <span className="text-violet-400">streak</span>, earn{" "}
+            <span className="text-cyan-400">XP</span>, unlock{" "}
+            <span className="text-violet-400">achievements</span>, explore your{" "}
+            <span className="text-cyan-400">growth</span>, and climb the leaderboard as your
+            skills evolve. Every completed day adds another layer to your developer portfolio
+            and another step toward becoming{" "}
+            <span className="text-violet-400">industry-ready</span>.
+          </p>
+
+          {/* 60 days highlighted in cyan */}
+          <p className="mt-7 text-base leading-relaxed text-muted-foreground">
+            No endless tutorials. No passive learning. No waiting for the perfect moment. Just{" "}
+            <span className="text-cyan-400">60 days</span> of building, experimenting, shipping,
+            and improving.
+          </p>
+
+          {/* Bold white closing paragraph */}
+          <p className="mt-7 text-base font-bold leading-relaxed text-white">
+            Start with one commit. Build your momentum. Make your work visible. Complete the
+            challenge. Become the developer you can prove you are.
+          </p>
+        </div>
+      </div>
+      </div>{/* /story-gap-wrapper */}
 
       <TrackFocus />
 
